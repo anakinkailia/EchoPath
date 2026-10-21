@@ -20,7 +20,8 @@ import {
   sendFeedback,
   track,
 } from "./store";
-import { Home, Library, Detail, Share, RoadmapPage, About } from "./pages";
+import { Library, Detail, Share, RoadmapPage, About } from "./pages";
+import { Home } from "./landing";
 import "./styles.css";
 import { AppContext, useApp, Brand, ButtonLink } from "./ui";
 function Feedback({ close }: { close: () => void }) {
