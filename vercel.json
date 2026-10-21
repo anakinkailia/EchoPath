@@ -1,5 +1,8 @@
 {
-  "rewrites": [{ "source": "/((?!assets/).*)", "destination": "/index.html" }],
+  "functions": { "api/plan.ts": { "maxDuration": 120 } },
+  "rewrites": [
+    { "source": "/((?!assets/|api/).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

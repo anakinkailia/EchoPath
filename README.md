@@ -48,6 +48,10 @@ docs/                         Architecture, demo, testing and evidence materials
 
 Experience narratives live in `src/data.ts`; `src/experience-playbooks.ts` contains original work samples, detailed technical skill lists, and source links checked October 20, 2026. Search includes projects, daily routines, challenges, and solutions. Contribution prompts ask for input → operation → QA → output → handoff details and support short permitted or synthetic work samples pasted into the existing text fields. File uploads are not implemented.
 
+## Skill calendar (AI planner)
+
+`/roadmap` is a three-step skill calendar: pick a skill drawn from the library, pick a scenario, then get a four-week calendar. Plans come from `api/plan.ts`, a Vercel Function that calls a Claude Sonnet model through Poe's OpenAI-compatible API (`POE_MODEL`, default `claude-sonnet-5.5`). The key is server-only: run `bash scripts/set-poe-key.sh` to store `POE_API_KEY` in `.env.local` (for `npm run dev`, which serves `api/` through a Vite middleware) and in Vercel production. Never prefix it with `VITE_`. The endpoint refuses cross-origin requests and validates input and model output; if the AI is unavailable the UI offers a clearly labeled template plan. Plans and task progress are stored in the browser, and calendars export as `.ics`.
+
 ## Demo data and storage
 
 With both Supabase frontend variables unset, the library contains ten fictional examples plus submissions stored under `echopath:submissions` in this browser. Partial or invalid connection settings show a configuration error instead of switching to demo data. Local submissions are labeled separately from fictional records. They are not shared with any server. Roadmaps, task progress, event counts and feedback are browser-local. Demo and live roadmap keys are separate. Events include a mode label.

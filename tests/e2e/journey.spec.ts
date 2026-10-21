@@ -45,16 +45,36 @@ test("complete demo journey: landing, search, detail, roadmap, contribution, fee
   await page
     .getByRole("link", { name: "Build my preparation roadmap" })
     .click();
-  await page.getByRole("button", { name: "Build my roadmap" }).click();
+  // The AI planner is mocked as unavailable so the template fallback is exercised offline.
+  await page.route("**/api/plan", (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: "AI planning is not configured on the server.",
+      }),
+    }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Your path to Business Analyst." }),
+    page.getByRole("heading", { name: /Which skill do you want/ }),
   ).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Tool SQL/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.getByRole("button", { name: "Choose a scenario" }).click();
+  await page.getByRole("button", { name: /Technical interview/ }).click();
+  await page.getByRole("button", { name: "Create my calendar" }).click();
+  await expect(page.getByRole("alert")).toContainText("not configured");
+  await page
+    .getByRole("button", { name: "Use a template plan instead" })
+    .click();
   await expect(
     page.getByText("Template · not AI generated", { exact: true }),
   ).toBeVisible();
-  await page.locator(".milestone input").first().check();
+  await page.locator(".sc-day input").first().check();
   await page.reload();
-  await expect(page.locator(".milestone input").first()).toBeChecked();
+  await expect(page.locator(".sc-day input").first()).toBeChecked();
   await page.goto("/share");
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(

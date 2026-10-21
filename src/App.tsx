@@ -19,7 +19,8 @@ import {
   sendFeedback,
   track,
 } from "./store";
-import { Library, Detail, Share, RoadmapPage, About } from "./pages";
+import { Library, Detail, Share, About } from "./pages";
+import { SkillCalendar } from "./skill-calendar";
 import { Home } from "./landing";
 import "./styles.css";
 import { AppContext, useApp, Brand, ButtonLink } from "./ui";
@@ -193,7 +194,7 @@ export default function App() {
             </NavLink>
             <NavLink to="/roadmap">
               <Compass size={16} />
-              My roadmap
+              Skill calendar
             </NavLink>
             <NavLink to="/about">About</NavLink>
           </nav>
@@ -217,7 +218,7 @@ export default function App() {
           <Route path="/experiences" element={<Library />} />
           <Route path="/experiences/:id" element={<Detail />} />
           <Route path="/share" element={<Share />} />
-          <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/roadmap" element={<SkillCalendar />} />
           <Route path="/about" element={<About />} />
           <Route
             path="*"
