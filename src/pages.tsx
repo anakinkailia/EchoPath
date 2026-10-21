@@ -98,8 +98,21 @@ export function Library() {
   const active = !!q || Object.values(filters).some(Boolean);
   const options = (key: keyof Experience) =>
     [...new Set(experiences.map((e) => String(e[key])))].sort();
+  // Feeds the panel height to CSS so the sticky filter panel can sit centred in the viewport.
+  const panel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = panel.current;
+    if (!el) return;
+    const measure = () =>
+      el.parentElement?.style.setProperty("--panel-h", `${el.offsetHeight}px`);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   return (
-    <div className="container page">
+    <div className="container page library-page">
       <div className="page-heading">
         <Eyebrow>LEARN FROM WHAT CAME BEFORE</Eyebrow>
         <h1>Find a path that inspires yours.</h1>
@@ -109,62 +122,64 @@ export function Library() {
         </p>
       </div>
       <div className="library-layout">
-        <aside className="filter-panel">
-          <div className="section-heading">
-            <strong>
-              <Filter size={17} /> Refine your search
-            </strong>
-            {active && (
-              <button className="text-link" onClick={() => setParams({})}>
-                Reset
-              </button>
-            )}
-          </div>
-          {[
-            ["experience_type", "Experience type", [...experienceTypes]],
-            ["industry", "Industry", options("industry")],
-            ["role_category", "Role category", options("role_category")],
-            [
-              "skills",
-              "Skills",
+        <div className="filter-rail">
+          <aside className="filter-panel" ref={panel}>
+            <div className="section-heading">
+              <strong>
+                <Filter size={17} /> Refine your search
+              </strong>
+              {active && (
+                <button className="text-link" onClick={() => setParams({})}>
+                  Reset
+                </button>
+              )}
+            </div>
+            {[
+              ["experience_type", "Experience type", [...experienceTypes]],
+              ["industry", "Industry", options("industry")],
+              ["role_category", "Role category", options("role_category")],
               [
-                ...new Set(
-                  experiences.flatMap((e) =>
-                    split(e.tools + ";" + e.valuable_skills),
+                "skills",
+                "Skills",
+                [
+                  ...new Set(
+                    experiences.flatMap((e) =>
+                      split(e.tools + ";" + e.valuable_skills),
+                    ),
                   ),
-                ),
-              ].sort(),
-            ],
-            ["year", "Year", options("year").reverse()],
-          ].map(([key, label, values]) => (
-            <label key={String(key)}>
-              {String(label)}
-              <select
-                value={filters[String(key)]}
-                onChange={(e) => update(String(key), e.target.value)}
-              >
-                <option value="">
-                  All {String(label).toLowerCase()}
-                  {key === "industry" ? " categories" : ""}
-                </option>
-                {(values as string[]).map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
-              </select>
-            </label>
-          ))}
-          <div className="filter-help">
-            <Compass size={24} />
-            <h4>Make it your next step.</h4>
-            <p>
-              Found an interesting path? Turn its lessons into your preparation
-              plan.
-            </p>
-            <Link to="/roadmap">
-              Build a roadmap <ArrowRight size={15} />
-            </Link>
-          </div>
-        </aside>
+                ].sort(),
+              ],
+              ["year", "Year", options("year").reverse()],
+            ].map(([key, label, values]) => (
+              <label key={String(key)}>
+                {String(label)}
+                <select
+                  value={filters[String(key)]}
+                  onChange={(e) => update(String(key), e.target.value)}
+                >
+                  <option value="">
+                    All {String(label).toLowerCase()}
+                    {key === "industry" ? " categories" : ""}
+                  </option>
+                  {(values as string[]).map((v) => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </select>
+              </label>
+            ))}
+            <div className="filter-help">
+              <Compass size={24} />
+              <h4>Make it your next step.</h4>
+              <p>
+                Found an interesting path? Turn its lessons into your
+                preparation plan.
+              </p>
+              <Link to="/roadmap">
+                Build a skill calendar <ArrowRight size={15} />
+              </Link>
+            </div>
+          </aside>
+        </div>
         <div className="library-results">
           <div className="search-box">
             <Search size={21} />

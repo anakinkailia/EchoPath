@@ -53,24 +53,35 @@ export function ExperienceCard({
   e: Experience;
   compact?: boolean;
 }) {
+  const provenance =
+    e.provenance === "fictional"
+      ? "Fictional example"
+      : e.provenance === "local"
+        ? "Your local submission"
+        : "Community submission";
   return (
     <Link
       to={`/experiences/${e.id}`}
       className={`experience-card ${compact ? "compact" : ""}`}
     >
-      <div className="card-top">
-        <span className={`company-icon tone-${e.company.length % 4}`}>
+      <div className="xc-head">
+        <span
+          className={`company-icon tone-${e.company.length % 4}`}
+          aria-hidden="true"
+        >
           {e.company
             .split(" ")
             .map((s) => s[0])
             .slice(0, 2)
             .join("")}
         </span>
-        <span className="badge">{e.experience_type}</span>
-        <ArrowUpRight size={19} />
-      </div>
-      <div className="company-name">
-        {e.company} <span>· {e.industry}</span>
+        <span className="xc-org">
+          <strong>{e.company}</strong>
+          <small>{e.industry}</small>
+        </span>
+        <span className="xc-arrow" aria-hidden="true">
+          <ArrowUpRight size={17} />
+        </span>
       </div>
       <h3>{e.role_title}</h3>
       <p>{e.responsibilities}</p>
@@ -80,17 +91,10 @@ export function ExperienceCard({
           .slice(0, 3)
           .map((s) => s.trim())}
       />
-      <div className="card-footer">
-        <span>
-          {e.provenance === "fictional"
-            ? "Fictional example"
-            : e.provenance === "local"
-              ? "Your local submission"
-              : "Community submission"}
-        </span>
-        <span>
-          {e.year} <ArrowRight size={15} />
-        </span>
+      <div className="xc-meta">
+        <span className="badge">{e.experience_type}</span>
+        <span>{provenance}</span>
+        <span>{e.year}</span>
       </div>
     </Link>
   );

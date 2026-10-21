@@ -24,6 +24,7 @@ import { SkillCalendar } from "./skill-calendar";
 import { Home } from "./landing";
 import "./styles.css";
 import "./topbar.css";
+import "./library.css";
 import { AppContext, useApp, Brand, ButtonLink } from "./ui";
 function Feedback({ close }: { close: () => void }) {
   const [busy, setBusy] = useState(false);
