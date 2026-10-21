@@ -175,13 +175,11 @@ function SkillStep({
   skill,
   setSkill,
   next,
-  total,
 }: {
   options: SkillOption[];
   skill: string;
   setSkill: (s: string) => void;
   next: () => void;
-  total: number;
 }) {
   const [filter, setFilter] = useState("");
   const [custom, setCustom] = useState("");
@@ -198,10 +196,6 @@ function SkillStep({
         <h1 className="page-title">
           Which skill do you want to grow this month?
         </h1>
-        <p>
-          Drawn from the tools and skills mentioned across {total} experiences
-          in the library.
-        </p>
       </header>
       <label className="sc-filter">
         <Search size={17} aria-hidden="true" />
@@ -977,7 +971,6 @@ export function SkillCalendar() {
                 options={options}
                 skill={skill}
                 setSkill={setSkill}
-                total={experiences.length}
                 next={() => {
                   setMax((m) => Math.max(m, 1));
                   go(1);

@@ -106,7 +106,6 @@ export function Library() {
   return (
     <div className="container page library-page">
       <div className="page-heading">
-        <Eyebrow>LEARN FROM WHAT CAME BEFORE</Eyebrow>
         <h1 className="page-title">Find a path that inspires yours.</h1>
       </div>
       <div className="library-layout">
