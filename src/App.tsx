@@ -6,6 +6,7 @@ import {
   BookOpen,
   Check,
   Compass,
+  Info,
   Menu,
   MessageSquare,
   Plus,
@@ -226,7 +227,10 @@ export default function App() {
               <Compass size={16} aria-hidden="true" />
               Skill Calendar
             </NavLink>
-            <NavLink to="/about">About</NavLink>
+            <NavLink to="/about">
+              <Info size={16} aria-hidden="true" />
+              About
+            </NavLink>
           </nav>
           <Link
             className="topbar__cta"

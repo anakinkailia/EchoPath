@@ -256,6 +256,18 @@
   margin-left: -12px;
 }
 
+/* Step headings sit centred (the calendar result keeps its side-by-side header). */
+.sc-head:not(.sc-plan-head) {
+  text-align: center;
+}
+.sc-head:not(.sc-plan-head) .sc-kicker {
+  justify-content: center;
+}
+.sc-head:not(.sc-plan-head) h1,
+.sc-head:not(.sc-plan-head) p {
+  margin-inline: auto;
+}
+
 /* step 1: skills */
 .sc-filter {
   display: flex;

@@ -16,6 +16,15 @@
   max-width: 1520px;
   padding-inline: 28px;
 }
+.library-page .page-heading {
+  text-align: center;
+}
+.library-page .page-heading .eyebrow {
+  justify-content: center;
+}
+.library-page .page-heading p {
+  margin-inline: auto;
+}
 .library-layout {
   grid-template-columns: 272px minmax(0, 1fr);
   gap: 28px;
