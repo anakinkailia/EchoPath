@@ -215,16 +215,6 @@ export function Library() {
               </select>
             </label>
           </div>
-          {!live && (
-            <p className="library-provenance">
-              These ten playbooks are detailed fictional teaching examples with
-              original synthetic work samples. Public insider accounts are
-              linked below; student submissions are labeled separately.{" "}
-              <a className="text-link" href="#public-accounts-title">
-                Read public accounts <ArrowRight size={13} />
-              </a>
-            </p>
-          )}
           {loading || error ? (
             <LoadState />
           ) : results.length ? (

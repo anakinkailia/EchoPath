@@ -1125,12 +1125,6 @@ footer {
 .detail-grid > aside {
   min-width: 0;
 }
-.library-provenance {
-  color: #ac96c6;
-  font-size: 12px;
-  line-height: 1.8;
-  margin: 0 0 20px;
-}
 .public-accounts > p {
   color: #ac96c6;
   font-size: 13px;
