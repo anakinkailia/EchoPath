@@ -160,6 +160,10 @@ export function filterExperiences(
             e.tools,
             e.valuable_skills,
             e.responsibilities,
+            e.projects,
+            e.typical_day,
+            e.challenges,
+            e.solutions,
             e.lessons_learned,
             e.advice,
           ]

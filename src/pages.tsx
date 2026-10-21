@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Clock3,
   Compass,
+  Download,
   Filter,
   GitBranch,
   MapPin,
@@ -49,6 +50,10 @@ import {
   track,
 } from "./store";
 import { demoExperiences } from "./data";
+import {
+  experiencePlaybooks,
+  publicInsiderAccounts,
+} from "./experience-playbooks";
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -112,8 +117,8 @@ export function Library() {
         <Eyebrow>LEARN FROM WHAT CAME BEFORE</Eyebrow>
         <h1>Find a path that inspires yours.</h1>
         <p>
-          Explore the work behind the title. Take the next step with a little
-          more perspective.
+          Go inside the work: daily routines, technical SOPs, sample outputs,
+          and the details MSBA students need before day one.
         </p>
       </div>
       <div className="library-layout">
@@ -178,7 +183,7 @@ export function Library() {
             <Search size={21} />
             <input
               aria-label="Search experiences"
-              placeholder="Search roles, companies, skills, or lessons…"
+              placeholder="Search roles, skills, daily tasks, or deliverables…"
               value={q}
               onChange={(e) => update("q", e.target.value)}
             />
@@ -208,6 +213,16 @@ export function Library() {
               </select>
             </label>
           </div>
+          {!live && (
+            <p className="library-provenance">
+              These ten playbooks are detailed fictional teaching examples with
+              original synthetic work samples. Public insider accounts are
+              linked below; student submissions are labeled separately.{" "}
+              <a className="text-link" href="#public-accounts-title">
+                Read public accounts <ArrowRight size={13} />
+              </a>
+            </p>
+          )}
           {loading || error ? (
             <LoadState />
           ) : results.length ? (
@@ -231,6 +246,35 @@ export function Library() {
           )}
         </div>
       </div>
+      <section
+        className="section public-accounts"
+        aria-labelledby="public-accounts-title"
+      >
+        <Eyebrow>FROM REAL TEAMS</Eyebrow>
+        <h2 id="public-accounts-title">Public insider accounts</h2>
+        <p>
+          Published accounts with named sources. Read the originals for context;
+          these are external references, not EchoPath student submissions.
+        </p>
+        <div className="public-accounts-grid">
+          {publicInsiderAccounts.map((account) => (
+            <article className="public-account" key={account.url}>
+              <span className="badge">Public source</span>
+              <h3>{account.title}</h3>
+              <p className="source-attribution">{account.attribution}</p>
+              <p>{account.summary}</p>
+              <a
+                className="text-link"
+                href={account.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Read the original account <ArrowUpRight size={15} />
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
@@ -307,6 +351,8 @@ export function Detail() {
     .filter((other) => other.id !== e.id)
     .sort((a, b) => relatedScore(b, e) - relatedScore(a, e))
     .slice(0, 3);
+  const playbook =
+    e.provenance === "fictional" ? experiencePlaybooks[e.id] : undefined;
   return (
     <div className="container page">
       <Link className="back-link" to="/experiences">
@@ -353,6 +399,20 @@ export function Detail() {
           {e.provenance === "fictional" ? " · fictional persona" : ""}
         </span>
       </div>
+      {playbook && (
+        <div className="notice experience-context">
+          <BookOpen size={19} />
+          <p>
+            <strong>Illustrative work, transparent sources.</strong> This
+            employer, persona, and routine are fictional. Work samples use
+            invented data. Technical references explain the methods; they do not
+            verify this as a student’s internship account.{" "}
+            <a className="text-link" href="#work-sample-title">
+              Open the work sample <ArrowRight size={13} />
+            </a>
+          </p>
+        </div>
+      )}
       <div className="detail-grid">
         <article>
           {[
@@ -360,8 +420,8 @@ export function Detail() {
               "What I actually did",
               [
                 ["Main responsibilities", e.responsibilities],
-                ["Projects I worked on", e.projects],
-                ["A typical day or week", e.typical_day],
+                ["Projects & daily outputs", e.projects],
+                ["A typical day or week · daily SOP", e.typical_day],
               ],
             ],
             [
@@ -391,6 +451,59 @@ export function Detail() {
               ))}
             </section>
           ))}
+          {playbook && (
+            <section
+              className="detail-section work-sample"
+              aria-labelledby="work-sample-title"
+            >
+              <div className="eyebrow">OPEN THE DELIVERABLE</div>
+              <h2 id="work-sample-title">{playbook.title}</h2>
+              <span className="badge">Original sample · synthetic data</span>
+              <p>{playbook.description}</p>
+              <div className="sample-check">
+                <h4>What a reviewer should check</h4>
+                <p>{playbook.reviewCheck}</p>
+              </div>
+              <details>
+                <summary>Preview {playbook.filename}</summary>
+                <pre
+                  tabIndex={0}
+                  aria-label={`${playbook.title} sample content`}
+                >
+                  <code>{playbook.content}</code>
+                </pre>
+              </details>
+              <a
+                className="button secondary"
+                href={`data:text/plain;charset=utf-8,${encodeURIComponent(playbook.content)}`}
+                download={playbook.filename}
+              >
+                <Download size={16} /> Download {playbook.filename}
+              </a>
+              {playbook.references.length > 0 && (
+                <div className="workflow-references">
+                  <h4>Technical references</h4>
+                  <ul>
+                    {playbook.references.map((reference) => (
+                      <li key={reference.url}>
+                        <a
+                          href={reference.url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {reference.title} <ArrowUpRight size={13} />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  <p>
+                    Reference links checked October 20, 2026. Adapt syntax and
+                    definitions to your team’s environment.
+                  </p>
+                </div>
+              )}
+            </section>
+          )}
         </article>
         <aside>
           <InsightPanel e={e} />
@@ -477,15 +590,35 @@ const fieldLabels: Record<string, string> = {
   duration: "Duration",
   work_arrangement: "Work arrangement",
   responsibilities: "What were your main responsibilities?",
-  projects: "What projects did you work on?",
-  typical_day: "What did a typical day or week look like?",
-  tools: "What tools and technologies did you use?",
+  projects: "What projects and daily outputs did you produce?",
+  typical_day: "What was your daily or weekly SOP?",
+  tools: "What tools and technical methods did you use?",
   challenges: "What was your biggest challenge?",
   solutions: "How did you overcome it?",
   valuable_skills: "What skills were most valuable?",
   lessons_learned: "What do you wish you had known before starting?",
   advice:
     "What advice would you give someone preparing for a similar opportunity?",
+};
+const fieldPrompts: Record<string, string> = {
+  responsibilities:
+    "Who used your analysis, what decision did it support, and what did you personally own? Distinguish your work from the team’s work.",
+  projects:
+    "Name the deliverable (query, notebook, dashboard, report), its grain and metric definition, how often you produced it, and what your reviewer checked. You can paste a short work sample you have permission to share, or recreate it with synthetic data.",
+  typical_day:
+    "Walk through the day in order: trigger or time → input → exact tool/operation → quality check → output → handoff. Include refresh checks, meetings, blockers, and review cadence.",
+  tools:
+    "Include methods, not just tool names: e.g. SQL — ROW_NUMBER, LEFT JOIN, cohort windows; pandas — merge validation; Power BI — DAX DISTINCTCOUNT and filter context.",
+  challenges:
+    "Describe one specific failure or ambiguity: duplicate join keys, late events, leakage, conflicting definitions, or a stakeholder constraint. How did you notice it?",
+  solutions:
+    "Give the diagnostic steps, exact fix, validation, and remaining limitation. Separate observed results from estimates and hypotheses.",
+  valuable_skills:
+    "Which technical and business skills did you use repeatedly, and for what task? Say what you needed on day one versus what you learned during the internship.",
+  lessons_learned:
+    "What did the job description leave out? Share a metric trap, access dependency, review expectation, or handoff detail that would have saved you time.",
+  advice:
+    "Give a practice task with a specific output and acceptance check. Which SQL operations, Python/R methods, BI calculations, or domain concepts should an MSBA student learn first?",
 };
 export function Share() {
   const { refresh, toast } = useApp();
@@ -601,7 +734,10 @@ export function Share() {
       <div className="page-heading">
         <Eyebrow>PAY YOUR EXPERIENCE FORWARD</Eyebrow>
         <h1>Your story. Someone’s head start.</h1>
-        <p>Share the details you wish you’d had before your first day.</p>
+        <p>
+          Share your routine, daily outputs, technical methods, and the details
+          you wish you’d had before your first day.
+        </p>
       </div>
       <div className="share-layout">
         <aside className="share-sidebar">
@@ -765,11 +901,7 @@ export function Share() {
                         aria-describedby={
                           errors[key] ? `${key}-error` : undefined
                         }
-                        placeholder={
-                          key === "tools"
-                            ? "e.g. SQL, Python, Tableau"
-                            : undefined
-                        }
+                        placeholder={fieldPrompts[key]}
                       />
                     )}
                     {errors[key] && (

@@ -31,11 +31,9 @@ it.each([false, true])(
     };
     const result = await load(array ? [insight] : insight);
     expect(result).toHaveLength(1);
-    expect(result[0].insights?.technical_skills).toEqual([
-      "SQL",
-      "Python",
-      "Tableau",
-    ]);
+    expect(result[0].insights?.technical_skills).toEqual(
+      insight.technical_skills,
+    );
     expect(result[0].model_version).toBe("test-model");
     expect(result[0].provenance).toBe("published");
   },

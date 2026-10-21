@@ -41,6 +41,29 @@ describe("experience discovery", () => {
       filterExperiences(demoExperiences, "unfindable", {}, "recent"),
     ).toHaveLength(0);
   });
+  it("finds deliverables and daily SOP details alongside existing filters", () => {
+    expect(
+      filterExperiences(demoExperiences, "activation_qa.sql", {}, "recent").map(
+        (e) => e.id,
+      ),
+    ).toEqual(["demo-1"]);
+    expect(
+      filterExperiences(
+        demoExperiences,
+        "p90",
+        { experience_type: "Internship" },
+        "recent",
+      ).map((e) => e.id),
+    ).toEqual(["demo-7"]);
+    expect(
+      filterExperiences(
+        demoExperiences,
+        "p90",
+        { industry: "Finance" },
+        "recent",
+      ),
+    ).toEqual([]);
+  });
   it("has unique valid fictional samples and complete insights", () => {
     expect(new Set(demoExperiences.map((e) => e.id)).size).toBe(10);
     demoExperiences.forEach((e) => {

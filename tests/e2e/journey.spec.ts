@@ -33,6 +33,15 @@ test("complete demo journey: landing, search, detail, roadmap, contribution, fee
     }),
   ).toBeVisible();
   await expect(page.getByText("TEMPLATE-EXTRACTED INSIGHTS")).toBeVisible();
+  await page.getByText("Preview activation_qa.sql", { exact: true }).click();
+  await expect(page.locator(".work-sample pre")).toContainText("ROW_NUMBER");
+  const downloadPromise = page.waitForEvent("download");
+  await page
+    .getByRole("link", { name: "Download activation_qa.sql", exact: true })
+    .click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("activation_qa.sql");
+  expect(await download.failure()).toBeNull();
   await page
     .getByRole("link", { name: "Build my preparation roadmap" })
     .click();
@@ -73,6 +82,7 @@ test("complete demo journey: landing, search, detail, roadmap, contribution, fee
   await expect(
     page.getByText("Browser-local submission", { exact: true }),
   ).toBeVisible();
+  await expect(page.locator(".work-sample")).toHaveCount(0);
   await page.reload();
   await expect(
     page.getByRole("heading", {
@@ -117,12 +127,26 @@ test("all fictional detail routes, empty states, about, and responsive layout", 
     await expect(
       page.getByRole("heading", { name: "What I actually did" }),
     ).toBeVisible();
+    await expect(page.locator(".work-sample a[download]")).toHaveCount(1);
+    await page.locator(".work-sample summary").click();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
   }
   await page.goto("/about");
   await expect(
     page.getByRole("heading", { name: /Good advice shouldn’t/ }),
   ).toBeVisible();
-  for (const route of ["/", "/experiences", "/share", "/roadmap", "/about"]) {
+  for (const route of [
+    "/",
+    "/experiences",
+    "/experiences/demo-1",
+    "/share",
+    "/roadmap",
+    "/about",
+  ]) {
     await page.goto(route);
     expect(
       await page.evaluate(
@@ -139,7 +163,16 @@ test("all fictional detail routes, empty states, about, and responsive layout", 
 test("landing and library pass automated accessibility checks", async ({
   page,
 }) => {
-  for (const route of ["/", "/experiences", "/share", "/roadmap", "/about"]) {
+  // Assess final readable colors rather than intermediate scroll-reveal opacity.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const route of [
+    "/",
+    "/experiences",
+    "/experiences/demo-1",
+    "/share",
+    "/roadmap",
+    "/about",
+  ]) {
     await page.goto(route);
     await expect(page.locator(".skeleton")).toHaveCount(0);
     const results = await new AxeBuilder({ page })

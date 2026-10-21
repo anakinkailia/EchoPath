@@ -63,7 +63,7 @@ async function extract(id: string, experience: unknown) {
   const insights = await ai(
     insightSchema,
     "experience_insights",
-    "Extract only facts explicitly supported by the supplied contribution. Use empty arrays when absent. Preparation recommendations must reflect contributor advice.",
+    "Extract only facts explicitly supported by the supplied contribution. Use empty arrays when absent. Preserve concrete technical operations from daily SOPs in technical_skills: query patterns, Python/R methods, BI calculations, validation checks, and required workflow steps. Keep tool names in tools; do not reduce technical_skills to software names or generic soft skills. Preserve deliverables and handoffs in main_responsibilities. Preparation recommendations must reflect contributor advice. Do not invent proficiency requirements, results, or employer practices.",
     experience,
   );
   const { error } = await admin.from("ai_insights").upsert(

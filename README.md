@@ -26,6 +26,7 @@ npm.cmd run dev
 
 - Landing page, experience library, dedicated detail pages, four-step contribution form, preparation roadmap, About page, feedback dialog, and working mobile navigation.
 - Ten complete fictional examples with explicit provenance. Combined text search, experience type, industry, role category, skill and year filters; recent, company and role sorting; related experiences.
+- Explore includes timed daily/weekly SOPs, named deliverables, role-specific technical methods, QA checks, and preparation exercises. Ten original synthetic work samples have previews, downloads, and expected review checks. Public insider accounts and primary technical references are linked separately from fictional scenarios; no verified MSBA submissions are claimed.
 - Required-field validation, privacy choices, explicit sharing consent, full preview, duplicate request protection, honest save status, and a fictional example autofill for fast demonstrations.
 - Original experience text retained separately from validated extraction. Demo extraction is deterministic; no fake AI delays.
 - Goals, existing/target skills, 1–12 preparation weeks, up to five evidence records, technical/business preparation, practice projects, interview preparation, weekly milestones, checkboxes, browser-local progress, source links, and print-to-PDF.
@@ -44,6 +45,8 @@ supabase/migrations/          SQL schema, constraints, indexes, RLS and rate lim
 tests/                        Unit, component, database and browser tests
 docs/                         Architecture, demo, testing and evidence materials
 ```
+
+Experience narratives live in `src/data.ts`; `src/experience-playbooks.ts` contains original work samples, detailed technical skill lists, and source links checked October 20, 2026. Search includes projects, daily routines, challenges, and solutions. Contribution prompts ask for input → operation → QA → output → handoff details and support short permitted or synthetic work samples pasted into the existing text fields. File uploads are not implemented.
 
 ## Demo data and storage
 
