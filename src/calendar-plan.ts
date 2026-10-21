@@ -1,5 +1,11 @@
 // Shared by the browser and the /api/plan serverless function.
 import { z } from "zod";
+import {
+  checkpointTasks,
+  getResource,
+  resourcesFor,
+  trackFor,
+} from "./resources.js";
 
 export const levels = ["Beginner", "Some experience", "Comfortable"] as const;
 export const intensities = {
@@ -34,7 +40,21 @@ export const planDaySchema = z.object({
   title: z.string().trim().min(3).max(90),
   minutes: z.number().int().min(10).max(240),
   tasks: z.array(z.string().trim().min(3).max(220)).min(1).max(4),
-  resource: z.string().trim().max(160).nullish(),
+  // Links always come from the curated catalog in resources.ts.
+  links: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        provider: z.string(),
+        url: z.url(),
+        kind: z.string(),
+        focus: z.string().max(140),
+      }),
+    )
+    .max(3)
+    .default([]),
+  resource: z.string().trim().max(160).nullish(), // plans saved before links existed
 });
 export const planBodySchema = z.object({
   title: z.string().trim().min(3).max(100),
@@ -75,6 +95,9 @@ export function studyDates(start: string, intensity: Intensity) {
 
 export function buildPrompt(req: PlanRequest, dates: string[]) {
   const { minutes, label } = intensities[req.intensity];
+  const kit = resourcesFor(req.skill, req.scenario)
+    .map((r) => `- ${r.id} | ${r.title} | ${r.provider} | ${r.kind}`)
+    .join("\n");
   return `Design a one-month study calendar for a USC Marshall MS Business Analytics student.
 
 Skill to develop: ${req.skill}
@@ -83,20 +106,48 @@ ${req.scenarioDetail ? `Scenario context: ${req.scenarioDetail}\n` : ""}Current 
 Intensity: ${label}, about ${minutes} minutes per session.
 Study dates (use every one of these dates exactly once, nothing else): ${dates.join(", ")}
 
+Free resources you may assign (id | title | provider | type):
+${kit}
+
 Rules:
 - Progress over 4 weeks: foundations → guided practice → applying the skill to the scenario → a small capstone and review.
-- Every session has 1-4 concrete, checkable tasks written as imperatives (e.g. "Write 3 LEFT JOIN queries on a sample orders table").
+- Every session has 2-4 concrete, checkable tasks written as imperatives that reference the assigned material (e.g. "Complete SQLBolt lessons 6–8, then write 3 LEFT JOIN queries on a sample orders table").
+- Every session lists 1-2 "resources" chosen ONLY from the ids above, each with a "focus" naming the exact lesson, chapter, module or exercise set to use (max 12 words). Never invent ids or URLs.
+- Follow a sensible order through courses (e.g. lessons 1-4, then 5-8) instead of repeating the same lesson.
 - Tie practice to the scenario; the last date is a "checkpoint" that simulates the scenario.
 - "minutes" stays within ±20 of ${minutes}.
-- "resource" names a well-known free resource or tool by name only. Never invent URLs.
 - "type" is one of: ${dayTypes.join(", ")}.
 
 Reply with JSON only, no markdown, in exactly this shape:
-{"title": string, "summary": string (2 sentences), "weeks": [{"theme": string (max 4 words), "goal": string}] (exactly 4), "days": [{"date": "YYYY-MM-DD", "type": string, "title": string (max 8 words), "minutes": number, "tasks": [string], "resource": string}]}`;
+{"title": string, "summary": string (2 sentences), "weeks": [{"theme": string (max 4 words), "goal": string}] (exactly 4), "days": [{"date": "YYYY-MM-DD", "type": string, "title": string (max 8 words), "minutes": number, "tasks": [string], "resources": [{"id": string, "focus": string}]}]}`;
 }
 
 const clip = (v: unknown, max: number) =>
   typeof v === "string" ? v.trim().slice(0, max).trim() : v;
+
+// Keeps only ids that exist in the catalog, so every link is a checked URL.
+function resolveLinks(list: unknown) {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  return list
+    .map((x) => {
+      const r = getResource(String(x?.id ?? x));
+      if (!r || seen.has(r.id)) return null;
+      seen.add(r.id);
+      const { id, title, provider, url, kind } = r;
+      const focus = typeof x?.focus === "string" ? x.focus : "";
+      return {
+        id,
+        title,
+        provider,
+        url,
+        kind,
+        focus: clip(focus, 140) as string,
+      };
+    })
+    .filter((x) => x !== null)
+    .slice(0, 3);
+}
 
 // Repairs small slips (long text, extra tasks, unknown types) instead of
 // discarding an otherwise good plan; structural problems still fail validation.
@@ -128,8 +179,7 @@ function normalizeReply(raw: unknown, minutes: number) {
               .map((t: unknown) => clip(t, 220))
               .filter((t: unknown) => typeof t === "string" && t.length >= 3)
               .slice(0, 4),
-            resource:
-              typeof d?.resource === "string" ? clip(d.resource, 160) : null,
+            links: resolveLinks(d?.resources),
           }))
           .filter((d) => d.tasks.length > 0)
       : r.days,
@@ -167,50 +217,81 @@ export function parsePlanReply(reply: string, dates: string[], minutes = 60) {
 }
 
 const phases = [
-  ["Foundations", "learn", "Learn the core building blocks of"],
-  ["Guided practice", "practice", "Practice"],
-  ["Apply it", "build", "Apply"],
-  ["Capstone & review", "review", "Consolidate"],
+  ["Foundations", "learn"],
+  ["Guided practice", "practice"],
+  ["Apply it", "build"],
+  ["Capstone & review", "review"],
 ] as const;
 
-// Deterministic fallback, clearly labeled as a template in the UI.
+// Deterministic fallback built from a curated module track for the skill,
+// clearly labeled as a template in the UI.
 export function templatePlan(req: PlanRequest): CalendarPlan {
   const dates = studyDates(req.start, req.intensity);
   const { minutes } = intensities[req.intensity];
+  const track = trackFor(req.skill);
+  const used = new Set<number>();
   const days: PlanDay[] = dates.map((date, i) => {
     const week = Math.min(
       3,
       Math.floor((Date.parse(date) - Date.parse(req.start)) / 6048e5),
     );
-    const [, type, verb] = phases[week];
-    const last = i === dates.length - 1;
+    if (i === dates.length - 1)
+      return {
+        date,
+        type: "checkpoint",
+        minutes,
+        title: `${req.scenario} dry run`.slice(0, 90),
+        tasks: checkpointTasks(req.scenario, req.skill),
+        links: resolveLinks(
+          resourcesFor(req.skill, req.scenario, 2).map((r) => ({
+            id: r.id,
+            focus: "Keep open as a reference during the dry run",
+          })),
+        ),
+      };
+    const index = Math.min(
+      track.length - 1,
+      Math.floor((i * track.length) / Math.max(1, dates.length - 1)),
+    );
+    const repeat = used.has(index);
+    used.add(index);
+    const mod = track[index];
     return {
       date,
-      type: last ? "checkpoint" : type,
+      type: repeat ? "practice" : phases[week][1],
       minutes,
-      title: last
-        ? `${req.scenario} dry run`
-        : `${phases[week][0]}: ${req.skill}`,
-      tasks: last
+      title: (repeat ? `Practice: ${mod.title}` : mod.title).slice(0, 90),
+      tasks: repeat
         ? [
-            `Simulate the scenario end to end using ${req.skill}`,
-            "Note what slowed you down and list next steps",
+            `Redo the hardest exercise from “${mod.title}” without notes`,
+            `Apply it to a task like: ${req.scenario}`,
+            "Write down one mistake and how to avoid it",
           ]
-        : [
-            `${verb} ${req.skill} for 20 focused minutes`,
-            `Complete one exercise connected to: ${req.scenario}`,
-            "Write a two-line summary of what you learned",
-          ],
-      resource: null,
+        : mod.tasks,
+      links: resolveLinks(mod.res.map(([id, focus]) => ({ id, focus }))),
     };
   });
   return {
-    title: `${req.skill} in four weeks`,
-    summary: `A template plan that moves from foundations to applying ${req.skill} in “${req.scenario}”. It is not AI generated.`,
-    weeks: phases.map(([theme], i) => ({
-      theme,
-      goal: `Week ${i + 1}: ${theme.toLowerCase()} for ${req.skill}.`,
-    })),
+    title: `${req.skill}: a four-week plan`,
+    summary: `A curated template that moves from foundations to applying ${req.skill} in “${req.scenario}”, using free courses and practice sites. It is not AI generated.`,
+    weeks: phases.map(([theme], w) => {
+      const titles = days
+        .filter(
+          (d) =>
+            Math.min(
+              3,
+              Math.floor((Date.parse(d.date) - Date.parse(req.start)) / 6048e5),
+            ) === w && d.type !== "practice",
+        )
+        .map((d) => d.title);
+      return {
+        theme,
+        goal: (titles.length
+          ? titles.join(" · ")
+          : `Practice ${req.skill}`
+        ).slice(0, 220),
+      };
+    }),
     days,
     request: req,
     source: "template",
@@ -237,7 +318,15 @@ export function toIcs(plan: CalendarPlan) {
       `DTSTART;VALUE=DATE:${d.date.replace(/-/g, "")}`,
       `DTEND;VALUE=DATE:${addDays(d.date, 1).replace(/-/g, "")}`,
       `SUMMARY:${icsText(`${plan.request.skill}: ${d.title} (${d.minutes} min)`)}`,
-      `DESCRIPTION:${icsText(d.tasks.map((t) => `• ${t}`).join("\n") + (d.resource ? `\nResource: ${d.resource}` : ""))}`,
+      `DESCRIPTION:${icsText(
+        [
+          ...d.tasks.map((t) => `• ${t}`),
+          ...(d.links ?? []).map(
+            (l) =>
+              `${l.title} (${l.provider})${l.focus ? ` — ${l.focus}` : ""}: ${l.url}`,
+          ),
+        ].join("\n"),
+      )}`,
       "END:VEVENT",
     ].join("\r\n"),
   );

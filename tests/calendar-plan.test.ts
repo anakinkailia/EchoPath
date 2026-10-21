@@ -10,6 +10,7 @@ import {
   type PlanRequest,
 } from "../src/calendar-plan";
 import { POST } from "../api/plan";
+import { resources, resourcesFor } from "../src/resources";
 
 const req: PlanRequest = {
   skill: "SQL",
@@ -32,7 +33,8 @@ describe("skill calendar plans", () => {
   it("prompts with every study date and never asks for URLs", () => {
     const prompt = buildPrompt(req, studyDates(req.start, "steady"));
     expect(prompt).toContain("2026-11-14");
-    expect(prompt).toContain("Never invent URLs");
+    expect(prompt).toContain("Never invent ids or URLs");
+    expect(prompt).toContain("sqlbolt | SQLBolt interactive lessons");
   });
   it("accepts a valid model reply, keeps only scheduled dates and sorts them", () => {
     const dates = ["2026-10-20", "2026-10-22", "2026-10-24", "2026-10-26"];
@@ -42,7 +44,10 @@ describe("skill calendar plans", () => {
       title: "SELECT basics",
       minutes: 60,
       tasks: ["Write five SELECT queries"],
-      resource: "SQLBolt",
+      resources: [
+        { id: "sqlbolt", focus: "Lessons 1–4" },
+        { id: "made-up-site", focus: "Invented" },
+      ],
     });
     const reply = `Here you go:\n${JSON.stringify({
       title: "SQL month",
@@ -58,6 +63,14 @@ describe("skill calendar plans", () => {
     })}`;
     const plan = parsePlanReply(reply, dates);
     expect(plan.days.map((d) => d.date)).toEqual(dates);
+    // Only catalog ids survive, resolved to their checked URL.
+    expect(plan.days[0].links).toEqual([
+      expect.objectContaining({
+        id: "sqlbolt",
+        url: "https://sqlbolt.com/",
+        focus: "Lessons 1–4",
+      }),
+    ]);
   });
   it("repairs small slips instead of discarding the plan", () => {
     const dates = ["2026-10-20", "2026-10-22", "2026-10-24", "2026-10-26"];
@@ -82,7 +95,7 @@ describe("skill calendar plans", () => {
     expect(plan.days[0]).toMatchObject({ type: "practice", minutes: 75 });
     expect(plan.days[0].title).toHaveLength(90);
     expect(plan.days[0].tasks).toEqual(["one", "two", "three", "four"]);
-    expect(plan.days[0].resource).toHaveLength(160);
+    expect(plan.days[0].links).toEqual([]);
   });
   it("rejects replies that skip most study days or are malformed", () => {
     expect(() => parsePlanReply("no json here", ["2026-10-20"])).toThrow();
@@ -93,12 +106,30 @@ describe("skill calendar plans", () => {
   it("builds a labeled template plan and a valid calendar file", () => {
     const plan = templatePlan(req);
     expect(plan.source).toBe("template");
+    expect(plan.days.every((d) => d.links.length > 0)).toBe(true);
+    expect(plan.days[0].title).toBe("SELECT, WHERE and ORDER BY");
+    expect(
+      templatePlan({ ...req, skill: "Excel shortcuts" }).days[0].tasks[0],
+    ).toMatch(/Ctrl\+Arrow/);
     expect(planBodySchema.safeParse(plan).success).toBe(true);
     expect(plan.days.at(-1)!.type).toBe("checkpoint");
     const ics = toIcs(plan);
     expect(ics.startsWith("BEGIN:VCALENDAR")).toBe(true);
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(plan.days.length);
     expect(ics).toContain("DTSTART;VALUE=DATE:20261020");
+    expect(ics).toContain("https://sqlbolt.com/");
+  });
+});
+
+describe("resource catalog", () => {
+  it("uses unique ids and https links, and ranks skill matches first", () => {
+    const ids = resources.map((r) => r.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(resources.every((r) => r.url.startsWith("https://"))).toBe(true);
+    expect(resourcesFor("Power BI")[0].tags).toContain("power bi");
+    expect(
+      resourcesFor("Python", "Technical interview").map((r) => r.id),
+    ).toContain("stratascratch");
   });
 });
 

@@ -8,9 +8,13 @@ function devApi(): Plugin {
   return {
     name: "echopath-dev-api",
     configureServer(server) {
-      Object.assign(process.env, loadEnv("development", process.cwd(), "POE_"));
       server.middlewares.use("/api", async (req, res) => {
         try {
+          // Re-read .env.local on every call so a changed key works without a restart.
+          Object.assign(
+            process.env,
+            loadEnv("development", process.cwd(), "POE_"),
+          );
           const name = (req.url ?? "/").split("?")[0].replace(/^\/|\/$/g, "");
           const mod = await server.ssrLoadModule(`/api/${name}.ts`);
           const handler = mod[req.method ?? "GET"];

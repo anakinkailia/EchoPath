@@ -796,6 +796,117 @@
   text-transform: uppercase;
   color: var(--lp-violet);
 }
+.sc-links {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--lp-line);
+  display: grid;
+  gap: 8px;
+}
+.sc-links > b,
+.sc-kit small {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lp-violet);
+}
+.sc-links a {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #a78bfa33;
+  background: #ffffff06;
+  color: var(--lp-violet);
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.sc-links a:hover,
+.sc-kit a:hover {
+  border-color: #c4b5fd;
+  background: #a78bfa14;
+}
+.sc-links a > span {
+  display: grid;
+  gap: 1px;
+}
+.sc-links strong {
+  font-size: 13px;
+  color: var(--lp-ink);
+}
+.sc-links small {
+  font-size: 11px;
+  color: var(--lp-faint);
+}
+.sc-links em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--lp-soft);
+  margin-top: 3px;
+}
+.sc-kit {
+  margin-top: 26px;
+}
+.sc-kit h2 {
+  font-size: 22px !important;
+  letter-spacing: -0.02em !important;
+}
+.sc-kit > p {
+  color: var(--lp-soft);
+  font-size: 13px;
+  margin: 6px 0 14px;
+}
+.sc-kit ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.sc-kit li {
+  margin: 0;
+  animation: sc-pop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 0.05s)
+    both;
+}
+.sc-kit a {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  height: 100%;
+  padding: 14px 40px 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--lp-line);
+  background: linear-gradient(160deg, #ffffff0a, #ffffff02);
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.sc-kit strong {
+  font-size: 14px;
+  color: var(--lp-ink);
+}
+.sc-kit span {
+  font-size: 12px;
+  color: var(--lp-soft);
+}
+.sc-kit a > svg {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  color: var(--lp-violet);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .sc-error {
   padding: 22px;
   border-radius: 18px;

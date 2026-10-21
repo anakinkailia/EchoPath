@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Check,
   Download,
+  ExternalLink,
   FileCode2,
   MessageSquare,
   Printer,
@@ -34,6 +35,7 @@ import {
   planRequestSchema,
   type CalendarPlan,
   type Intensity,
+  type PlanDay,
   type PlanRequest,
 } from "./calendar-plan";
 import "./skill-calendar.css";
@@ -592,6 +594,19 @@ function CalendarStep({
     saveLocal(PROGRESS_KEY, next);
   };
   const req = plan?.request ?? pending;
+  const kit = useMemo(() => {
+    const map = new Map<
+      string,
+      { link: PlanDay["links"][number]; sessions: number }
+    >();
+    for (const d of plan?.days ?? [])
+      for (const link of d.links ?? [])
+        map.set(link.id, {
+          link,
+          sessions: (map.get(link.id)?.sessions ?? 0) + 1,
+        });
+    return [...map.values()].sort((a, b) => b.sessions - a.sessions);
+  }, [plan]);
   const ics = useMemo(
     () =>
       plan
@@ -710,14 +725,58 @@ function CalendarStep({
                 );
               })}
             </ul>
-            {day.resource && (
-              <p className="sc-resource">
-                <b>Resource</b> {day.resource}
-              </p>
+            {(day.links ?? []).length > 0 ? (
+              <div className="sc-links">
+                <b>Free resources for this session</b>
+                {day.links.map((l) => (
+                  <a key={l.id} href={l.url} target="_blank" rel="noreferrer">
+                    <span>
+                      <strong>{l.title}</strong>
+                      <small>
+                        {l.provider} · {l.kind}
+                      </small>
+                      {l.focus && <em>{l.focus}</em>}
+                    </span>
+                    <ExternalLink size={15} aria-hidden="true" />
+                    <span className="sr-only">(opens in a new tab)</span>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              day.resource && (
+                <p className="sc-resource">
+                  <b>Resource</b> {day.resource}
+                </p>
+              )
             )}
           </aside>
         )}
       </div>
+      {kit.length > 0 && (
+        <section className="sc-kit" aria-labelledby="sc-kit-title">
+          <h2 id="sc-kit-title">Your free resource kit</h2>
+          <p>
+            Every course and practice site used in this plan. All free; some
+            Coursera courses are free to audit.
+          </p>
+          <ul>
+            {kit.map(({ link, sessions }, i) => (
+              <li key={link.id} style={{ "--i": i } as React.CSSProperties}>
+                <a href={link.url} target="_blank" rel="noreferrer">
+                  <small>{link.kind}</small>
+                  <strong>{link.title}</strong>
+                  <span>
+                    {link.provider} · used in {sessions} session
+                    {sessions > 1 ? "s" : ""}
+                  </span>
+                  <ExternalLink size={15} aria-hidden="true" />
+                  <span className="sr-only">(opens in a new tab)</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {plan && (
         <footer className="sc-foot sc-actions">
           <button className="sc-ghost" type="button" onClick={restart}>

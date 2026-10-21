@@ -26,7 +26,11 @@ export async function POST(request: Request) {
   if (!origin || !host || new URL(origin).host !== host)
     return json({ error: "Requests must come from the EchoPath site." }, 403);
 
-  const key = process.env.POE_API_KEY;
+  // Strip terminal escape codes or whitespace that can sneak in when pasting.
+  const key = (process.env.POE_API_KEY ?? "")
+    // eslint-disable-next-line no-control-regex
+    .replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "")
+    .replace(/[^\x21-\x7e]/g, "");
   if (!key)
     return json({ error: "AI planning is not configured on the server." }, 503);
 
@@ -81,8 +85,16 @@ export async function POST(request: Request) {
           (await res.text()).slice(0, 300),
         );
         lastError = "The AI service could not create a plan right now.";
-        if (res.status === 401 || res.status === 402 || res.status === 403)
+        if (res.status === 401 || res.status === 403) {
+          lastError =
+            "The server's Poe API key was rejected. Check POE_API_KEY.";
           break;
+        }
+        if (res.status === 402 || res.status === 429) {
+          lastError =
+            "The Poe account is out of points or rate-limited. Try again later.";
+          break;
+        }
         continue;
       }
       const data = (await res.json()) as {
@@ -107,6 +119,14 @@ export async function POST(request: Request) {
         `Plan generation failed (attempt ${attempt}):`,
         err.message,
       );
+      if (
+        err.name === "TypeError" &&
+        /header/i.test(String(err.cause ?? err.message))
+      ) {
+        lastError =
+          "The server's Poe API key is malformed. Re-run scripts/set-poe-key.sh.";
+        break;
+      }
       lastError =
         err.name === "TimeoutError"
           ? "The AI took too long. Please try again."

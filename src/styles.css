@@ -307,7 +307,7 @@ small {
   margin-left: -9px;
   color: #ac96c6;
 }
-header {
+#root > header {
   background: #0e0a12ed;
   border-bottom: 1px solid var(--border);
   position: relative;
@@ -2504,7 +2504,7 @@ dialog .section-heading {
   }
 }
 @media print {
-  header,
+  #root > header,
   footer,
   .mode-bar,
   .page-heading,
@@ -2579,7 +2579,7 @@ dialog .section-heading {
 body {
   background: #050308;
 }
-header {
+#root > header {
   background: #050308d9;
   backdrop-filter: blur(14px);
   border-bottom-color: #ffffff12;
