@@ -563,61 +563,43 @@ export function About() {
         depend on who you know.
       </h1>
       <p className="lead">
-        The most useful career insights often live in a conversation you never
-        had. We’re creating a place where those lessons can travel further.
+        The most useful career advice usually lives in conversations you never
+        got to have. EchoPath collects those lessons from students who have done
+        the work, so the next student can walk in prepared.
       </p>
       <div className="about-grid">
         <div className="about-copy">
           <h2>From scattered stories to shared knowledge.</h2>
           <p>
-            Job descriptions tell you the title. They rarely tell you which
-            tools you’ll open on Monday, what will be difficult, or what you’ll
-            wish you had practiced.
-          </p>
-          <p>
-            EchoPath helps the USC Marshall MS Business Analytics community
-            share practical internship, consulting project, and early-career
-            experiences. Contributors preserve the original story. Future
-            students can search it, learn from it, and prepare with more
-            context.
+            A job description tells you the title, not the work: it rarely says
+            which tools you will open on Monday, which problem will fill your
+            week, or what you will wish you had practiced. EchoPath gives the
+            USC Marshall MS Business Analytics community a place to share real
+            internship, consulting-project and early-career experiences in their
+            own words, so future students can search them, see the routines and
+            methods behind each role, and prepare with real context.
           </p>
           <h2>AI with a clear purpose.</h2>
           <p>
-            When configured, OpenAI organizes contributions into structured
-            skills, challenges, lessons, and preparation advice. Roadmaps use
-            the selected published experiences as context. References show which
-            records informed a task; general preparation suggestions are labeled
-            separately. AI output can contain mistakes and should be checked
-            against the original account.
-          </p>
-          <p>
-            Without an AI connection, deterministic templates provide an
-            explicitly labeled alternative. Demo organizations and experiences
-            are fictional. They are not research findings, alumni testimony, or
-            verified outcomes.
+            AI does two specific jobs here. It turns a resume or write-up into a
+            draft post that its author edits and approves, and it builds the
+            Skill Calendar: a month of study sessions linked to free courses
+            picked from a checked list. It works only from what you give it and
+            can still make mistakes, so every draft is reviewed by the person
+            who wrote it, every plan says whether it came from AI or a template,
+            and the example companies in the library are fictional teaching
+            cases rather than alumni testimony or verified outcomes.
           </p>
           <h2>Your experience, shared thoughtfully.</h2>
           <p>
-            Choose anonymity, a first name, or a display name. Contributions
-            require consent and should never include employer secrets, client
-            data, or personal details about others. Persistent submissions await
-            trusted moderation before publication. The project team can manage
-            deletion requests through its database administration process;
-            contact the team that shared this prototype.
-          </p>
-          <p>
-            In community mode, submitted experience text may be sent to OpenAI
-            if processing is enabled. Feedback is private to the project team.
-            Personal roadmaps and task progress stay in your browser.
-            Lightweight event counts stay in your browser too, with separate
-            demo and live labels, and do not include search text or personal
-            identifiers.
-          </p>
-          <p>
-            Browser-local content is accessible to people who use the same
-            browser profile. You can remove it through your browser’s site-data
-            settings. Export local feedback and event records using the footer’s
-            report action.
+            You choose whether to appear anonymously, by first name or by a
+            display name, and nothing is published without your consent. Before
+            any text reaches the AI, the name line of a resume, emails, phone
+            numbers and links are removed, and the text is used only to draft
+            your post. Please leave out employer secrets, client data and other
+            people’s personal details. For now, posts, work samples, plans and
+            progress are saved in your own browser, and you can clear them at
+            any time through your browser’s site-data settings.
           </p>
         </div>
         <aside className="about-cards" aria-label="About the project">
@@ -629,12 +611,9 @@ export function About() {
               Smarter next steps.
             </h3>
             <p>
-              Built as a student-developed prototype for the 2026 USC Marshall
-              Global MS Business Analytics AI Case Competition.
-            </p>
-            <p>
-              EchoPath is an independent student project and is not an official
-              USC service or endorsed university platform.
+              EchoPath is an independent student project built for the 2026 USC
+              Marshall Global MS Business Analytics AI Case Competition. It is
+              not an official USC service or a university-endorsed platform.
             </p>
             <ButtonLink to="/share">Add your perspective</ButtonLink>
           </div>
@@ -642,15 +621,15 @@ export function About() {
             <ShieldCheck size={25} />
             <h3>Collect less. Explain more.</h3>
             <p>
-              No account required. No public feedback feed. No invented user
-              statistics. Clear sources and clear limits.
+              No account to create, no public feedback feed and no invented
+              statistics, just clear sources and honest limits.
             </p>
           </div>
         </aside>
       </div>
       <section className="about-contact" aria-labelledby="about-contact-title">
         <h2 id="about-contact-title">Let’s connect.</h2>
-        <p>Have a question or feedback? Get in touch.</p>
+        <p>Have a question, an idea or feedback? We’d love to hear from you.</p>
         <a href="mailto:anakin.kailia@gmail.com">
           <Mail size={18} aria-hidden="true" />
           anakin.kailia@gmail.com

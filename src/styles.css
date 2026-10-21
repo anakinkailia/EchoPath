@@ -7,6 +7,8 @@
   --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
+  /* About page body copy (its main title keeps the display face). */
+  --font-about: "Nunito", ui-rounded, "Geist", ui-sans-serif, sans-serif;
   font-family: var(--font-body);
   font-feature-settings: "ss01", "cv11";
   color: #dbd2e7;
@@ -1761,8 +1763,14 @@ footer {
   font-size: 10px;
   color: var(--ink-muted);
 }
+.about-page,
+.about-page :is(h2, h3, .eyebrow, .button, .lead) {
+  font-family: var(--font-about);
+}
 .about-page > .eyebrow {
   justify-content: center;
+  letter-spacing: 0.16em;
+  font-weight: 700;
 }
 .about-page > h1 {
   font-size: 50px;
@@ -1793,16 +1801,18 @@ footer {
   margin-inline: auto;
 }
 .about-grid h2 {
-  font-size: 25px;
-  margin: 44px 0 18px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 44px 0 16px;
 }
 .about-grid h2:first-child {
   margin-top: 0;
 }
 .about-grid > div > p {
   color: var(--ink-muted);
-  font-size: 14px;
-  line-height: 1.9;
+  font-size: 16px;
+  line-height: 1.85;
   margin-bottom: 18px;
 }
 .about-copy > p:last-child {
@@ -1826,11 +1836,13 @@ footer {
 }
 .about-cards h3 {
   color: var(--ink);
-  font-size: 21px;
-  margin: 0 0 18px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0 0 16px;
 }
 .about-cards > div > p {
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.8;
 }
 .about-grid aside .notice {
