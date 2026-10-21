@@ -526,7 +526,7 @@ export function Detail() {
               Use this experience to inform a plan for your next opportunity.
             </p>
             <ButtonLink to={`/roadmap?source=${e.id}`}>
-              Build my preparation roadmap
+              Build my skill
             </ButtonLink>
           </div>
         </aside>

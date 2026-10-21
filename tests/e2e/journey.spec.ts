@@ -58,9 +58,7 @@ test("complete demo journey: landing, search, detail, roadmap, contribution, fee
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe("activation_qa.sql");
   expect(await download.failure()).toBeNull();
-  await page
-    .getByRole("link", { name: "Build my preparation roadmap" })
-    .click();
+  await page.getByRole("link", { name: "Build my skill" }).click();
   // The AI planner is mocked as unavailable so the template fallback is exercised offline.
   await page.route("**/api/plan", (route) =>
     route.fulfill({
