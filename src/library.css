@@ -112,7 +112,7 @@
   padding: 16px 0;
 }
 .search-box kbd {
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: 10px;
 }
 .results-toolbar {
@@ -265,7 +265,7 @@
   gap: 10px;
   padding-top: 14px;
   border-top: 1px solid var(--card-rim);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: 11px;
   letter-spacing: 0.02em;
   color: var(--card-ink-3);

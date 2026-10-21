@@ -28,7 +28,7 @@
   margin-bottom: 38px;
 }
 .sc-title {
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -164,7 +164,7 @@
   margin-bottom: 26px;
 }
 .sc-kicker {
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -540,7 +540,7 @@
   text-transform: uppercase;
   color: var(--lp-faint);
   font-weight: 600;
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
 }
 .sc-notes > label small {
   font-size: 10px;

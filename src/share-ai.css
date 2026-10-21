@@ -176,7 +176,7 @@
 }
 .sh-found .sc-scenario small {
   color: var(--lp-violet);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: 11px;
   letter-spacing: 0.04em;
 }
@@ -332,7 +332,7 @@
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-weight: 500;
   color: var(--lp-faint);
 }

@@ -1,16 +1,18 @@
 @import "tailwindcss";
 @theme {
-  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
 }
 :root {
-  /* Type system: Geist for display, body and UI; Geist Mono only for small labels. */
-  --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
+  /* Type system: Nunito is the main face for body, headings, labels and UI.
+     Each page's main title keeps its own face (--font-headline here, or
+     --font-title from page-titles.css); Geist Mono is only for code previews. */
+  --font-body: "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-body);
+  --font-label: var(--font-body);
+  --font-headline: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-wordmark: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
-  /* About page body copy (its main title keeps the display face). */
-  --font-about: "Nunito", ui-rounded, "Geist", ui-sans-serif, sans-serif;
   font-family: var(--font-body);
-  font-feature-settings: "ss01", "cv11";
   color: #dbd2e7;
   background: var(--surface-raised);
   font-synthesis: none;
@@ -69,6 +71,9 @@ h3 {
   font-family: var(--font-display);
   line-height: 1.22;
   letter-spacing: -0.035em;
+}
+h1 {
+  font-family: var(--font-headline);
 }
 h1 {
   font-size: 46px;
@@ -249,7 +254,7 @@ small {
   background: var(--surface-panel);
 }
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: 10.5px;
   letter-spacing: 1.4px;
   font-weight: 500;
@@ -296,6 +301,7 @@ small {
   font-weight: 550;
 }
 .brand {
+  font-family: var(--font-wordmark);
   font-size: 24px;
   font-weight: 750;
   letter-spacing: -1px;
@@ -1762,10 +1768,6 @@ footer {
 .evidence-panel p {
   font-size: 10px;
   color: var(--ink-muted);
-}
-.about-page,
-.about-page :is(h2, h3, .eyebrow, .button, .lead) {
-  font-family: var(--font-about);
 }
 .about-page > .eyebrow {
   justify-content: center;

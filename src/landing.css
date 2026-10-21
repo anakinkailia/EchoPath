@@ -13,7 +13,9 @@
   color: var(--lp-ink);
   overflow-x: clip;
 }
-.lp h1,
+.lp h1 {
+  font-family: var(--font-headline);
+}
 .lp h2,
 .lp h3 {
   font-family: var(--lp-display);
@@ -632,7 +634,7 @@
 }
 .lp-kicker {
   display: block;
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
