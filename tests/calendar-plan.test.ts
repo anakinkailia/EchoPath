@@ -59,6 +59,31 @@ describe("skill calendar plans", () => {
     const plan = parsePlanReply(reply, dates);
     expect(plan.days.map((d) => d.date)).toEqual(dates);
   });
+  it("repairs small slips instead of discarding the plan", () => {
+    const dates = ["2026-10-20", "2026-10-22", "2026-10-24", "2026-10-26"];
+    const reply =
+      "```json\n" +
+      JSON.stringify({
+        title: "SQL month",
+        summary: "Build SQL skills for interviews. Finish with a mock.",
+        weeks: Array(5).fill({ theme: "Basics", goal: "Learn the basics" }),
+        days: dates.map((date) => ({
+          date,
+          type: "Rest",
+          title: "A".repeat(140),
+          minutes: "75",
+          tasks: ["one", "two", "three", "four", "five", "x"],
+          resource: "R".repeat(300),
+        })),
+      }) +
+      "\n```";
+    const plan = parsePlanReply(reply, dates);
+    expect(plan.weeks).toHaveLength(4);
+    expect(plan.days[0]).toMatchObject({ type: "practice", minutes: 75 });
+    expect(plan.days[0].title).toHaveLength(90);
+    expect(plan.days[0].tasks).toEqual(["one", "two", "three", "four"]);
+    expect(plan.days[0].resource).toHaveLength(160);
+  });
   it("rejects replies that skip most study days or are malformed", () => {
     expect(() => parsePlanReply("no json here", ["2026-10-20"])).toThrow();
     expect(() =>

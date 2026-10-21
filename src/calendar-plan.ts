@@ -95,17 +95,67 @@ Reply with JSON only, no markdown, in exactly this shape:
 {"title": string, "summary": string (2 sentences), "weeks": [{"theme": string (max 4 words), "goal": string}] (exactly 4), "days": [{"date": "YYYY-MM-DD", "type": string, "title": string (max 8 words), "minutes": number, "tasks": [string], "resource": string}]}`;
 }
 
-// Pulls the first JSON object out of a model reply and validates it.
-export function parsePlanReply(reply: string, dates: string[]) {
+const clip = (v: unknown, max: number) =>
+  typeof v === "string" ? v.trim().slice(0, max).trim() : v;
+
+// Repairs small slips (long text, extra tasks, unknown types) instead of
+// discarding an otherwise good plan; structural problems still fail validation.
+function normalizeReply(raw: unknown, minutes: number) {
+  if (!raw || typeof raw !== "object") return raw;
+  const r = raw as Record<string, unknown>;
+  return {
+    title: clip(r.title, 100),
+    summary: clip(r.summary, 500),
+    weeks: Array.isArray(r.weeks)
+      ? r.weeks.slice(0, 4).map((w) => ({
+          theme: clip(w?.theme, 60),
+          goal: clip(w?.goal, 220),
+        }))
+      : r.weeks,
+    days: Array.isArray(r.days)
+      ? r.days
+          .map((d) => ({
+            date: typeof d?.date === "string" ? d.date.slice(0, 10) : d?.date,
+            type: dayTypes.includes(String(d?.type).toLowerCase() as never)
+              ? String(d.type).toLowerCase()
+              : "practice",
+            title: clip(d?.title, 90),
+            minutes: Math.min(
+              240,
+              Math.max(10, Math.round(Number(d?.minutes) || minutes)),
+            ),
+            tasks: (Array.isArray(d?.tasks) ? d.tasks : [])
+              .map((t: unknown) => clip(t, 220))
+              .filter((t: unknown) => typeof t === "string" && t.length >= 3)
+              .slice(0, 4),
+            resource:
+              typeof d?.resource === "string" ? clip(d.resource, 160) : null,
+          }))
+          .filter((d) => d.tasks.length > 0)
+      : r.days,
+  };
+}
+
+// Pulls the JSON object out of a model reply, repairs it and validates it.
+export function parsePlanReply(reply: string, dates: string[], minutes = 60) {
   const start = reply.indexOf("{");
   const end = reply.lastIndexOf("}");
   if (start < 0 || end <= start)
     throw new Error("The model did not return a plan.");
-  const parsed = planBodySchema.safeParse(
-    JSON.parse(reply.slice(start, end + 1)),
-  );
+  let raw: unknown;
+  try {
+    raw = JSON.parse(reply.slice(start, end + 1));
+  } catch {
+    throw new Error("The model's plan was not valid JSON.");
+  }
+  const parsed = planBodySchema.safeParse(normalizeReply(raw, minutes));
   if (!parsed.success)
-    throw new Error("The model returned a plan in an unexpected format.");
+    throw new Error(
+      `The model returned a plan in an unexpected format (${parsed.error.issues
+        .slice(0, 3)
+        .map((i) => `${i.path.join(".")}: ${i.message}`)
+        .join("; ")}).`,
+    );
   const allowed = new Set(dates);
   const seen = new Set<string>();
   const days = parsed.data.days

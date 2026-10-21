@@ -2,6 +2,7 @@
 // POE_API_KEY lives only in server environment variables; it never reaches the browser.
 import {
   buildPrompt,
+  intensities,
   parsePlanReply,
   planRequestSchema,
   studyDates,
@@ -42,56 +43,76 @@ export async function POST(request: Request) {
   const dates = studyDates(req.start, req.intensity);
   const model = process.env.POE_MODEL || "claude-sonnet-5.5";
 
-  try {
-    const res = await fetch("https://api.poe.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${key}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 6000,
-        temperature: 0.4,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a practical learning coach for business analytics graduate students. You design realistic, specific study calendars and reply with valid JSON only.",
-          },
-          { role: "user", content: buildPrompt(req, dates) },
-        ],
-      }),
-      signal: AbortSignal.timeout(110_000),
-    });
-    if (!res.ok) {
-      console.error("Poe error", res.status, (await res.text()).slice(0, 300));
-      return json(
-        { error: "The AI service could not create a plan right now." },
-        502,
-      );
-    }
-    const data = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const plan: CalendarPlan = {
-      ...parsePlanReply(data.choices?.[0]?.message?.content ?? "", dates),
-      request: req,
-      source: "ai",
-      model,
-      created_at: new Date().toISOString(),
-    };
-    return json(plan);
-  } catch (e) {
-    console.error("Plan generation failed", e);
-    return json(
+  const body = JSON.stringify({
+    model,
+    max_tokens: 8000,
+    temperature: 0.4,
+    messages: [
       {
-        error:
-          (e as Error).name === "TimeoutError"
-            ? "The AI took too long. Please try again."
-            : "The AI returned an unusable plan. Please try again.",
+        role: "system",
+        content:
+          "You are a practical learning coach for business analytics graduate students. You design realistic, specific study calendars and reply with valid JSON only.",
       },
-      502,
-    );
+      { role: "user", content: buildPrompt(req, dates) },
+    ],
+  });
+  const deadline = Date.now() + 110_000;
+  let lastError = "The AI returned an unusable plan. Please try again.";
+  // One retry: occasional malformed replies usually succeed on a second attempt.
+  for (
+    let attempt = 1;
+    attempt <= 2 && Date.now() < deadline - 20_000;
+    attempt++
+  ) {
+    try {
+      const res = await fetch("https://api.poe.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${key}`,
+          "content-type": "application/json",
+        },
+        body,
+        signal: AbortSignal.timeout(deadline - Date.now()),
+      });
+      if (!res.ok) {
+        console.error(
+          `Poe error (attempt ${attempt})`,
+          res.status,
+          (await res.text()).slice(0, 300),
+        );
+        lastError = "The AI service could not create a plan right now.";
+        if (res.status === 401 || res.status === 402 || res.status === 403)
+          break;
+        continue;
+      }
+      const data = (await res.json()) as {
+        choices?: { message?: { content?: string }; finish_reason?: string }[];
+      };
+      const choice = data.choices?.[0];
+      const plan: CalendarPlan = {
+        ...parsePlanReply(
+          choice?.message?.content ?? "",
+          dates,
+          intensities[req.intensity].minutes,
+        ),
+        request: req,
+        source: "ai",
+        model,
+        created_at: new Date().toISOString(),
+      };
+      return json(plan);
+    } catch (e) {
+      const err = e as Error;
+      console.error(
+        `Plan generation failed (attempt ${attempt}):`,
+        err.message,
+      );
+      lastError =
+        err.name === "TimeoutError"
+          ? "The AI took too long. Please try again."
+          : "The AI returned an unusable plan. Please try again.";
+      if (err.name === "TimeoutError") break;
+    }
   }
+  return json({ error: lastError }, 502);
 }
