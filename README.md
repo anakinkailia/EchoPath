@@ -4,7 +4,9 @@
 
 ## Status
 
-Fully functional locally in clearly labeled **demo mode**. Supabase persistence and a secure OpenAI integration are implemented, but have **not been connected to a hosted project or tested with live credentials**. No accounts, paid resources, commits, pushes, or deployments were created. Fictional entries are not verified alumni accounts or competition research.
+Version **1.2.0**, deployed at [echopath-bay.vercel.app](https://echopath-bay.vercel.app). This version includes the light/dark theme toggle, updated page headings and About layout, background accents, and company/industry icons. Theme preferences persist in the browser.
+
+The experience library includes fictional examples; these are not verified alumni accounts or competition research. Supabase persistence and server-side AI integrations are implemented; hosted services require their own environment configuration. Private environment files are excluded from this repository.
 
 ## Run locally
 

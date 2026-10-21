@@ -1,4 +1,13 @@
 import { defineConfig, devices } from "@playwright/test";
+const daylight = {
+  cookies: [],
+  origins: [
+    {
+      origin: "http://127.0.0.1:5173",
+      localStorage: [{ name: "echopath:theme", value: "light" }],
+    },
+  ],
+};
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: false,
@@ -13,6 +22,18 @@ export default defineConfig({
     {
       name: "mobile",
       use: { ...devices["iPhone 13"], defaultBrowserType: "chromium" },
+    },
+    {
+      name: "daylight-desktop",
+      use: { ...devices["Desktop Chrome"], storageState: daylight },
+    },
+    {
+      name: "daylight-mobile",
+      use: {
+        ...devices["iPhone 13"],
+        defaultBrowserType: "chromium",
+        storageState: daylight,
+      },
     },
   ],
 });

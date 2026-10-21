@@ -9,3 +9,5 @@ playwright-report/
 *.log
 *.tsbuildinfo
 .vercel
+.DS_Store
+design-preview/

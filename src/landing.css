@@ -1,6 +1,6 @@
 /* EchoPath v1 landing — dark purple / black, spotlight hero */
 .lp {
-  --lp-bg: #050308;
+  --lp-bg: var(--canvas);
   --lp-ink: #f3eefc;
   --lp-soft: #b7a9cf;
   --lp-faint: #6f6385;
@@ -153,10 +153,11 @@
   border-radius: 99px;
 }
 .lp-hero h1 {
+  font-family: var(--font-title);
   font-size: clamp(42px, 7.2vw, 88px);
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.02;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.015em;
   margin-bottom: 28px;
 }
 .lp-line {
@@ -657,6 +658,7 @@
 /* ---------- horizon ---------- */
 .lp-horizon {
   position: relative;
+  overflow: clip;
   min-height: 620px;
   display: grid;
   place-items: center;
@@ -679,7 +681,7 @@
   height: 1500px;
   translate: -50% 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 0%, #1a0b33, #050308 40%);
+  background: radial-gradient(circle at 50% 0%, #1a0b33, var(--canvas) 40%);
   box-shadow:
     0 -2px 0 #c4b5fd,
     0 -12px 40px #8b5cf6aa,

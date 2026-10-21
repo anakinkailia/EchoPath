@@ -1,0 +1,97 @@
+/* A flat, quiet tile: soft corners and a fine rim, with no raised shadow. */
+.company-mark {
+  --mark-ink: #bbb3c9;
+  --mark-fill: #b6aac210;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #ffffff0b;
+  overflow: hidden;
+  background: var(--mark-fill);
+  color: var(--mark-ink);
+}
+.company-mark > svg {
+  width: 20px;
+  height: 20px;
+}
+.company-mark[data-industry="technology"] {
+  --mark-ink: #9cbbdf;
+  --mark-fill: #6b9cd818;
+}
+.company-mark[data-industry="consulting"] {
+  --mark-ink: #b8a6d8;
+  --mark-fill: #a185cc18;
+}
+.company-mark[data-industry="healthcare"] {
+  --mark-ink: #8bc9b6;
+  --mark-fill: #66b49b18;
+}
+.company-mark[data-industry="retail"] {
+  --mark-ink: #d4a4bd;
+  --mark-fill: #c58aa818;
+}
+.company-mark[data-industry="nonprofit"] {
+  --mark-ink: #b4ade0;
+  --mark-fill: #998bd018;
+}
+.company-mark[data-industry="logistics"] {
+  --mark-ink: #cfb28e;
+  --mark-fill: #bd9b6e18;
+}
+.company-mark[data-industry="research"] {
+  --mark-ink: #8fc6ce;
+  --mark-fill: #67adb818;
+}
+.company-mark[data-industry="finance"] {
+  --mark-ink: #a2c6b3;
+  --mark-fill: #7eac9218;
+}
+.company-mark[data-industry="energy"] {
+  --mark-ink: #b4c68f;
+  --mark-fill: #95ae6818;
+}
+.company-mark[data-industry="manufacturing"] {
+  --mark-ink: #adbace;
+  --mark-fill: #879bb818;
+}
+.company-mark[data-industry="education"] {
+  --mark-ink: #b1b1df;
+  --mark-fill: #9090cb18;
+}
+.company-mark[data-industry="hospitality"] {
+  --mark-ink: #d0b4a0;
+  --mark-fill: #bb977a18;
+}
+.company-mark--logo {
+  background: #f0edf4;
+  border-color: #ffffff20;
+}
+.company-mark > img {
+  width: 68%;
+  height: 68%;
+  object-fit: contain;
+}
+.company-mark--large {
+  width: 75px;
+  height: 75px;
+  border-radius: 22px;
+}
+.company-mark--large > svg {
+  width: 34px;
+  height: 34px;
+}
+@media (max-width: 760px) {
+  .company-mark--large {
+    width: 55px;
+    height: 55px;
+    border-radius: 17px;
+  }
+  .company-mark--large > svg {
+    width: 27px;
+    height: 27px;
+  }
+}

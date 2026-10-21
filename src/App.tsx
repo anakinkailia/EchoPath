@@ -27,6 +27,10 @@ import { Home } from "./landing";
 import "./styles.css";
 import "./topbar.css";
 import "./library.css";
+import { Atmosphere } from "./atmosphere";
+import "./page-titles.css";
+import "./themes.css";
+import { ThemeToggle } from "./theme-toggle";
 import { AppContext, useApp, Brand, ButtonLink } from "./ui";
 function Feedback({ close }: { close: () => void }) {
   const [busy, setBusy] = useState(false);
@@ -205,6 +209,7 @@ export default function App() {
     <AppContext.Provider
       value={{ experiences, loading, error, refresh, toast: setMessage }}
     >
+      {location.pathname !== "/" && <Atmosphere />}
       <a href="#main" className="skip-link">
         Skip to content
       </a>
@@ -232,6 +237,7 @@ export default function App() {
               About
             </NavLink>
           </nav>
+          <ThemeToggle />
           <Link
             className="topbar__cta"
             to="/share"

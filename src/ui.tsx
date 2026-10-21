@@ -2,6 +2,7 @@ import React, { createContext, useContext } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, GitBranch } from "lucide-react";
 import { type Experience } from "./domain";
+import { CompanyMark } from "./company-mark";
 type Context = {
   experiences: Experience[];
   loading: boolean;
@@ -53,28 +54,13 @@ export function ExperienceCard({
   e: Experience;
   compact?: boolean;
 }) {
-  const provenance =
-    e.provenance === "fictional"
-      ? "Fictional example"
-      : e.provenance === "local"
-        ? "Your local submission"
-        : "Community submission";
   return (
     <Link
       to={`/experiences/${e.id}`}
       className={`experience-card ${compact ? "compact" : ""}`}
     >
       <div className="xc-head">
-        <span
-          className={`company-icon tone-${e.company.length % 4}`}
-          aria-hidden="true"
-        >
-          {e.company
-            .split(" ")
-            .map((s) => s[0])
-            .slice(0, 2)
-            .join("")}
-        </span>
+        <CompanyMark e={e} />
         <span className="xc-org">
           <strong>{e.company}</strong>
           <small>{e.industry}</small>
@@ -93,7 +79,6 @@ export function ExperienceCard({
       />
       <div className="xc-meta">
         <span className="badge">{e.experience_type}</span>
-        <span>{provenance}</span>
         <span>{e.year}</span>
       </div>
     </Link>

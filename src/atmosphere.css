@@ -1,0 +1,79 @@
+/* The scene sits behind the whole app, including the footer. No scroll listeners,
+   section-sized gradients or animated filters: the frame stays steady on scroll. */
+#root {
+  isolation: isolate;
+  min-height: 100svh;
+}
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  background: var(--canvas);
+}
+.atmosphere__glow,
+.atmosphere__ribbons,
+.atmosphere__vignette {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.atmosphere__glow {
+  background:
+    radial-gradient(ellipse 38% 65% at -12% 82%, #8b4be875, transparent 80%),
+    radial-gradient(ellipse 36% 65% at 112% 76%, #8b4be880, transparent 80%),
+    radial-gradient(ellipse 85% 30% at 50% 116%, #a16bf098, transparent 85%),
+    linear-gradient(0deg, #b78af02b, #7135dc0a 14%, transparent 35%);
+}
+.atmosphere__ribbons {
+  opacity: 0.7;
+}
+.atmosphere__vignette {
+  background: radial-gradient(
+    ellipse 48% 52% at 50% 42%,
+    #050308a6,
+    transparent 100%
+  );
+}
+
+@media screen {
+  .lp,
+  footer {
+    background: transparent;
+  }
+  /* Frosted cards pick up the ribbon's colour while keeping copy readable. */
+  .lp-steps article {
+    background: linear-gradient(145deg, #ffffff0b, #ffffff03), #110a1e99;
+    border-color: #c4b5fd26;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow:
+      inset 0 1px 0 #ffffff0a,
+      0 18px 48px -30px #00000080;
+  }
+}
+
+@media (max-width: 640px) {
+  .atmosphere__ribbons {
+    /* Keep the loops at the edges rather than squeezing them behind mobile copy. */
+    width: 180%;
+    max-width: none;
+    left: -40%;
+    opacity: 0.5;
+  }
+  .atmosphere__glow {
+    background:
+      radial-gradient(ellipse 50% 60% at -25% 85%, #8b4be866, transparent 85%),
+      radial-gradient(ellipse 50% 60% at 125% 80%, #8b4be866, transparent 85%),
+      linear-gradient(0deg, #a16bf033, #7135dc08 18%, transparent 40%);
+  }
+}
+
+@media print {
+  .atmosphere {
+    display: none;
+  }
+}

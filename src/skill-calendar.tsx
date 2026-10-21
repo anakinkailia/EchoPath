@@ -195,7 +195,9 @@ function SkillStep({
     <>
       <header className="sc-head">
         <span className="sc-kicker">Step 1 · Choose a skill</span>
-        <h1>Which skill do you want to grow this month?</h1>
+        <h1 className="page-title">
+          Which skill do you want to grow this month?
+        </h1>
         <p>
           Drawn from the tools and skills mentioned across {total} experiences
           in the library.
@@ -349,7 +351,7 @@ function ScenarioStep({
     <>
       <header className="sc-head">
         <span className="sc-kicker">Step 2 · Pick the scenario</span>
-        <h1>
+        <h1 className="page-title">
           Where will you use <em>{skill}</em>?
         </h1>
         <p>
@@ -399,11 +401,7 @@ function ScenarioStep({
                   <Target size={20} aria-hidden="true" />
                   <strong>{label}</strong>
                   <span>{e.projects}</span>
-                  <small>
-                    {e.provenance === "fictional"
-                      ? "Fictional example"
-                      : e.industry}
-                  </small>
+                  <small>{e.industry}</small>
                 </button>
               );
             })}
@@ -679,7 +677,7 @@ function CalendarStep({
               </b>
             )}
           </span>
-          <h1>
+          <h1 className="page-title">
             {plan
               ? plan.title
               : failure

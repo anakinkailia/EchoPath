@@ -10,6 +10,7 @@ import {
   Download,
   Filter,
   GitBranch,
+  Mail,
   MapPin,
   Search,
   ShieldCheck,
@@ -17,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { ButtonLink, ExperienceCard, Tags, useApp } from "./ui";
+import { CompanyMark } from "./company-mark";
 import {
   displayName,
   experienceTypes,
@@ -25,7 +27,7 @@ import {
   split,
   type Experience,
 } from "./domain";
-import { live, track } from "./store";
+import { track } from "./store";
 import { formatBytes, loadSample, type WorkSample } from "./work-samples";
 import {
   experiencePlaybooks,
@@ -105,11 +107,7 @@ export function Library() {
     <div className="container page library-page">
       <div className="page-heading">
         <Eyebrow>LEARN FROM WHAT CAME BEFORE</Eyebrow>
-        <h1>Find a path that inspires yours.</h1>
-        <p>
-          Go inside the work: daily routines, technical SOPs, sample outputs,
-          and the details MSBA students need before day one.
-        </p>
+        <h1 className="page-title">Find a path that inspires yours.</h1>
       </div>
       <div className="library-layout">
         <div className="filter-rail">
@@ -190,7 +188,6 @@ export function Library() {
             <p>
               <strong>{results.length}</strong>{" "}
               {results.length === 1 ? "experience" : "experiences"}
-              {!live && <span> · Demo library</span>}
             </p>
             <label>
               Sort by{" "}
@@ -391,24 +388,9 @@ export function Detail() {
         Back to the library
       </Link>
       <div className="detail-heading">
-        <div className={`company-icon large tone-${e.company.length % 4}`}>
-          {e.company
-            .split(" ")
-            .map((s) => s[0])
-            .slice(0, 2)
-            .join("")}
-        </div>
+        <CompanyMark e={e} large />
         <div>
-          <Tags
-            values={[
-              e.experience_type,
-              e.provenance === "fictional"
-                ? "Fictional example"
-                : e.provenance === "local"
-                  ? "Browser-local submission"
-                  : "Published community contribution",
-            ]}
-          />
+          <Tags values={[e.experience_type]} />
           <h1>{e.role_title}</h1>
           <p>
             {e.company} <span>· {e.industry}</span>
@@ -576,7 +558,7 @@ export function About() {
   return (
     <div className="container page about-page">
       <Eyebrow>THE STORY BEHIND ECHOPATH</Eyebrow>
-      <h1>
+      <h1 className="page-title">
         Good advice shouldn’t
         <br />
         depend on who you know.
@@ -586,7 +568,7 @@ export function About() {
         had. We’re creating a place where those lessons can travel further.
       </p>
       <div className="about-grid">
-        <div>
+        <div className="about-copy">
           <h2>From scattered stories to shared knowledge.</h2>
           <p>
             Job descriptions tell you the title. They rarely tell you which
@@ -639,7 +621,7 @@ export function About() {
             report action.
           </p>
         </div>
-        <aside>
+        <aside className="about-cards" aria-label="About the project">
           <div className="insight-panel">
             <GitBranch size={36} />
             <h3>
@@ -667,6 +649,14 @@ export function About() {
           </div>
         </aside>
       </div>
+      <section className="about-contact" aria-labelledby="about-contact-title">
+        <h2 id="about-contact-title">Let’s connect.</h2>
+        <p>Have a question or feedback? Get in touch.</p>
+        <a href="mailto:anakin.kailia@gmail.com">
+          <Mail size={18} aria-hidden="true" />
+          anakin.kailia@gmail.com
+        </a>
+      </section>
     </div>
   );
 }

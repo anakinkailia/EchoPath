@@ -275,7 +275,7 @@
     display: none;
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 960px) {
   .topbar__inner {
     padding-inline: 16px;
   }
@@ -336,7 +336,7 @@
     display: inline;
   }
 }
-@media (max-width: 400px) {
+@media (max-width: 560px) {
   .topbar__cta span {
     display: none;
   }

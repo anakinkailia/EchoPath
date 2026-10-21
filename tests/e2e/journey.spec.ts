@@ -1,5 +1,21 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+test.beforeEach(async ({ page }, info) => {
+  if (info.project.name.startsWith("daylight"))
+    await page.emulateMedia({ reducedMotion: "reduce" });
+});
+async function checkDaylightContrast(page: Page) {
+  if ((await page.locator("html").getAttribute("data-theme")) !== "light")
+    return;
+  const result = await new AxeBuilder({ page })
+    .withRules(["color-contrast"])
+    .analyze();
+  expect(
+    result.violations.map(
+      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(",")).join(";")}`,
+    ),
+  ).toEqual([]);
+}
 test("complete demo journey: landing, search, detail, roadmap, contribution, feedback", async ({
   page,
 }) => {
@@ -64,6 +80,7 @@ test("complete demo journey: landing, search, detail, roadmap, contribution, fee
   );
   await page.getByRole("button", { name: "Choose a scenario" }).click();
   await page.getByRole("button", { name: /Technical interview/ }).click();
+  await checkDaylightContrast(page);
   await page.getByRole("button", { name: "Create my calendar" }).click();
   await expect(page.getByRole("alert")).toContainText("not configured");
   await page
@@ -73,6 +90,7 @@ test("complete demo journey: landing, search, detail, roadmap, contribution, fee
     page.getByText("Template · not AI generated", { exact: true }),
   ).toBeVisible();
   await page.locator(".sc-day input").first().check();
+  await checkDaylightContrast(page);
   await page.reload();
   await expect(page.locator(".sc-day input").first()).toBeChecked();
   // The AI drafting endpoint is mocked so the share flow runs offline.
@@ -139,6 +157,7 @@ test("complete demo journey: landing, search, detail, roadmap, contribution, fee
     page.getByRole("heading", { name: "Make it yours." }),
   ).toBeVisible();
   const publish = page.getByRole("button", { name: "Publish experience" });
+  await checkDaylightContrast(page);
   await expect(publish).toBeDisabled();
   await page
     .getByRole("checkbox", { name: /I reviewed this AI draft/ })
@@ -167,6 +186,7 @@ test("complete demo journey: landing, search, detail, roadmap, contribution, fee
     }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Give feedback" }).click();
+  await checkDaylightContrast(page);
   await page.getByLabel("How useful was EchoPath?").selectOption("5");
   await page.getByLabel("Was the information easy to find?").selectOption("4");
   await page
