@@ -22,9 +22,9 @@ it("renders the application and navigates to the searchable library", async () =
     screen.getByRole("heading", { name: /Learn from the paths/ }),
   ).toBeInTheDocument();
   await user.click(
-    screen.getAllByRole("link", {
+    screen.getByRole("link", {
       name: "Explore experiences",
-    })[1],
+    }),
   );
   await waitFor(() =>
     expect(

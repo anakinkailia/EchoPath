@@ -219,21 +219,21 @@ export default function App() {
           >
             <NavLink to="/experiences">
               <BookOpen size={16} aria-hidden="true" />
-              Explore experiences
+              Explore Experiences
             </NavLink>
             <NavLink to="/roadmap">
               <Compass size={16} aria-hidden="true" />
-              Skill calendar
+              Skill Calendar
             </NavLink>
             <NavLink to="/about">About</NavLink>
           </nav>
           <Link
             className="topbar__cta"
             to="/share"
-            aria-label="Share experience"
+            aria-label="Share Experience"
           >
             <Plus size={17} aria-hidden="true" />
-            <span>Share experience</span>
+            <span>Share Experience</span>
           </Link>
           <button
             className="topbar__menu"
