@@ -19,7 +19,8 @@ import {
   sendFeedback,
   track,
 } from "./store";
-import { Library, Detail, Share, About } from "./pages";
+import { Library, Detail, About } from "./pages";
+import { ShareAI } from "./share-ai";
 import { SkillCalendar } from "./skill-calendar";
 import { Home } from "./landing";
 import "./styles.css";
@@ -251,7 +252,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/experiences" element={<Library />} />
           <Route path="/experiences/:id" element={<Detail />} />
-          <Route path="/share" element={<Share />} />
+          <Route path="/share" element={<ShareAI />} />
           <Route path="/roadmap" element={<SkillCalendar />} />
           <Route path="/about" element={<About />} />
           <Route

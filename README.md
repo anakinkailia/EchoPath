@@ -48,6 +48,10 @@ docs/                         Architecture, demo, testing and evidence materials
 
 Experience narratives live in `src/data.ts`; `src/experience-playbooks.ts` contains original work samples, detailed technical skill lists, and source links checked October 20, 2026. Search includes projects, daily routines, challenges, and solutions. Contribution prompts ask for input → operation → QA → output → handoff details and support short permitted or synthetic work samples pasted into the existing text fields. File uploads are not implemented.
 
+## Share an experience (AI drafting)
+
+`/share` turns a resume or write-up into a library post. The browser reads PDF (pdf.js), Word .docx (mammoth) or text files locally, removes the name line, emails, phone numbers and links, and sends only that text to `api/experience.ts`. The `analyze` action asks Claude (via Poe, same `POE_API_KEY`) to list up to five experiences with 3-4 tailored follow-up questions; `compose` writes the post from the chosen experience, the student's answers and an optional free-text box, using only provided facts. The student edits every section, picks how they appear and consents before publishing through the existing submission path. An optional work sample (under 10 MB) is stored in the browser's IndexedDB with the post and shown on its detail page; there is no server file storage yet.
+
 ## Skill calendar (AI planner)
 
 `/roadmap` is a three-step skill calendar: pick a skill drawn from the library, pick a scenario, then get a four-week calendar. Plans come from `api/plan.ts`, a Vercel Function that calls a Claude Sonnet model through Poe's OpenAI-compatible API (`POE_MODEL`, default `claude-sonnet-5.5`). The key is server-only: run `bash scripts/set-poe-key.sh` to store `POE_API_KEY` in `.env.local` (for `npm run dev`, which serves `api/` through a Vite middleware) and in Vercel production. Never prefix it with `VITE_`. The endpoint refuses cross-origin requests and validates input and model output; if the AI is unavailable the UI offers a clearly labeled template plan. Plans and task progress are stored in the browser, and calendars export as `.ics`.

@@ -75,38 +75,93 @@ test("complete demo journey: landing, search, detail, roadmap, contribution, fee
   await page.locator(".sc-day input").first().check();
   await page.reload();
   await expect(page.locator(".sc-day input").first()).toBeChecked();
+  // The AI drafting endpoint is mocked so the share flow runs offline.
+  const found = {
+    key: "exp-1",
+    role_title: "Data Analytics Intern",
+    company: "Brightline Retail",
+    industry: "Retail",
+    experience_type: "Internship",
+    role_category: "Analytics",
+    year: 2026,
+    duration: "Jun–Aug 2026",
+    work_arrangement: "Hybrid",
+    summary: "Built a weekly store dashboard in Power BI.",
+    highlights: ["Power BI dashboard for 40 managers"],
+    questions: [
+      { id: "q1", question: "What did a typical week look like?", hint: "" },
+      { id: "q2", question: "What was the hardest data problem?", hint: "" },
+    ],
+  };
+  await page.route("**/api/experience", async (route) => {
+    const body = route.request().postDataJSON();
+    expect(body.text ?? "").not.toContain("jordan@example.com");
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify(
+        body.action === "analyze"
+          ? { experiences: [found], model: "test-model" }
+          : {
+              model: "test-model",
+              draft: {
+                ...found,
+                responsibilities: "I owned the weekly store dashboard.",
+                projects: "A Power BI dashboard used by regional managers.",
+                typical_day: "Monday refresh checks, Friday review.",
+                tools: "SQL, Power BI",
+                challenges: "Duplicate SKUs in inventory snapshots.",
+                solutions: "Kept the latest snapshot with ROW_NUMBER.",
+                valuable_skills: "SQL, communication",
+                lessons_learned: "Ask how often each table refreshes.",
+                advice: "Practice joins on messy data.",
+              },
+            },
+      ),
+    });
+  });
   await page.goto("/share");
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByRole("button", { name: /fictional demo resume/ }).click();
+  await page.getByRole("button", { name: /Analyze with AI/ }).click();
   await expect(
-    page.getByText("Please enter at least 3 characters.").first(),
+    page.getByRole("heading", { name: "A few questions about this role." }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Fill fictional demo example" })
-    .click();
-  for (let i = 0; i < 3; i++)
-    await page.getByRole("button", { name: "Continue", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Submit experience", exact: true })
-    .click();
-  await expect(page.getByText("Consent is required to publish.")).toBeVisible();
-  await page.getByRole("checkbox", { name: /I consent/ }).check();
-  await page
-    .getByRole("button", { name: "Submit experience", exact: true })
-    .click();
+    .getByRole("textbox", { name: /typical week/ })
+    .fill("Monday refresh, Friday review.");
+  await page.locator(".sh-attach input").setInputFiles({
+    name: "dashboard.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from("store,revenue\nA,100\n"),
+  });
+  await expect(page.getByText("dashboard.csv").first()).toBeVisible();
+  await page.getByRole("button", { name: "Write my post" }).click();
   await expect(
-    page.getByRole("heading", { name: "Your local demo submission is saved." }),
+    page.getByRole("heading", { name: "Make it yours." }),
   ).toBeVisible();
+  const publish = page.getByRole("button", { name: "Publish experience" });
+  await expect(publish).toBeDisabled();
   await page
-    .getByRole("link", { name: "See experience & template insights" })
-    .click();
+    .getByRole("checkbox", { name: /I reviewed this AI draft/ })
+    .check();
+  await publish.click();
   await expect(
-    page.getByText("Browser-local submission", { exact: true }),
+    page.getByRole("heading", { name: "Your experience is posted." }),
   ).toBeVisible();
-  await expect(page.locator(".work-sample")).toHaveCount(0);
+  await page.getByRole("link", { name: "See your post" }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Data Analytics Intern",
+      level: 1,
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.locator(".sample-attachment pre")).toContainText(
+    "store,revenue",
+  );
   await page.reload();
   await expect(
     page.getByRole("heading", {
-      name: "Business Analytics Intern",
+      name: "Data Analytics Intern",
       level: 1,
       exact: true,
     }),

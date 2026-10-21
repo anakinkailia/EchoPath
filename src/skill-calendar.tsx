@@ -137,21 +137,23 @@ function skillOptions(experiences: Experience[]): SkillOption[] {
     .map(([, v]) => v);
 }
 
-function Stepper({
+export function Stepper({
   step,
   max,
   go,
+  labels = steps,
 }: {
   step: number;
   max: number;
   go: (n: number) => void;
+  labels?: string[];
 }) {
   return (
     <ol
       className="sc-stepper"
-      style={{ "--fill": step / 2 } as React.CSSProperties}
+      style={{ "--fill": step / (labels.length - 1) } as React.CSSProperties}
     >
-      {steps.map((label, i) => (
+      {labels.map((label, i) => (
         <li key={label} className={i === step ? "now" : i < step ? "done" : ""}>
           <button
             type="button"

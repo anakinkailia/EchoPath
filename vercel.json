@@ -1,14 +1,30 @@
 {
-  "functions": { "api/plan.ts": { "maxDuration": 120 } },
+  "functions": {
+    "api/plan.ts": {
+      "maxDuration": 120
+    },
+    "api/experience.ts": {
+      "maxDuration": 120
+    }
+  },
   "rewrites": [
-    { "source": "/((?!assets/|api/).*)", "destination": "/index.html" }
+    {
+      "source": "/((?!assets/|api/).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
   ]

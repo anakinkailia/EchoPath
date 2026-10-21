@@ -42,18 +42,28 @@ it("renders the application and navigates to the searchable library", async () =
     screen.queryByRole("heading", { name: "Data Science Intern" }),
   ).not.toBeInTheDocument();
 });
-it("shows field validation before advancing the contribution form", async () => {
+it("starts the share flow from a resume and keeps Analyze disabled until text is added", async () => {
   const user = userEvent.setup();
   render(
     <MemoryRouter initialEntries={["/share"]}>
       <App />
     </MemoryRouter>,
   );
-  await user.click(screen.getByRole("button", { name: "Continue" }));
   expect(
-    screen.getAllByText("Please enter at least 3 characters.").length,
-  ).toBeGreaterThan(0);
-  expect(
-    screen.getByRole("heading", { name: "Let’s start with the basics." }),
+    screen.getByRole("heading", { name: "Start from your resume." }),
   ).toBeInTheDocument();
+  const analyze = screen.getByRole("button", { name: /Analyze with AI/ });
+  expect(analyze).toBeDisabled();
+  await user.click(
+    screen.getByRole("button", { name: /fictional demo resume/ }),
+  );
+  expect(analyze).toBeEnabled();
+  await user.click(screen.getByRole("tab", { name: "Paste text" }));
+  expect(
+    (
+      screen.getByRole("textbox", {
+        name: /Paste your resume/,
+      }) as HTMLTextAreaElement
+    ).value,
+  ).toContain("Brightline Retail");
 });

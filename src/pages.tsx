@@ -1,24 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Link,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   BookOpen,
-  Check,
-  CheckCircle2,
   Clock3,
   Compass,
   Download,
   Filter,
   GitBranch,
   MapPin,
-  Plus,
   Search,
   ShieldCheck,
   Sparkles,
@@ -31,12 +23,10 @@ import {
   filterExperiences,
   insightSchema,
   split,
-  submissionSchema,
   type Experience,
-  type Submission,
 } from "./domain";
-import { live, submitExperience, track } from "./store";
-import { demoExperiences } from "./data";
+import { live, track } from "./store";
+import { formatBytes, loadSample, type WorkSample } from "./work-samples";
 import {
   experiencePlaybooks,
   publicInsiderAccounts,
@@ -315,6 +305,55 @@ function InsightPanel({ e }: { e: Experience }) {
     </div>
   );
 }
+const textLike = /\.(csv|sql|txt|md|py|r|json|tsv|log|yaml|yml)$/i;
+
+// Shows a work sample attached to a submission saved in this browser.
+function LocalWorkSample({ id }: { id: string }) {
+  const [sample, setSample] = useState<WorkSample | null>(null);
+  const [url, setUrl] = useState("");
+  const [preview, setPreview] = useState("");
+  useEffect(() => {
+    let alive = true;
+    let objectUrl = "";
+    void loadSample(id).then(async (s) => {
+      if (!alive || !s) return;
+      objectUrl = URL.createObjectURL(s.blob);
+      setSample(s);
+      setUrl(objectUrl);
+      if (textLike.test(s.name) && s.size < 512 * 1024)
+        setPreview((await s.blob.text()).slice(0, 20_000));
+    });
+    return () => {
+      alive = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [id]);
+  if (!sample) return null;
+  return (
+    <section
+      className="detail-section work-sample sample-attachment"
+      aria-labelledby="local-sample-title"
+    >
+      <div className="eyebrow">WORK SAMPLE</div>
+      <h2 id="local-sample-title">{sample.name}</h2>
+      <span className="badge">
+        Attached by the contributor · {formatBytes(sample.size)} · stored in
+        this browser
+      </span>
+      {sample.type.startsWith("image/") && (
+        <img src={url} alt={`Work sample: ${sample.name}`} />
+      )}
+      {sample.type === "application/pdf" && (
+        <iframe src={url} title={`Work sample: ${sample.name}`} />
+      )}
+      {preview && <pre>{preview}</pre>}
+      <a className="button secondary" href={url} download={sample.name}>
+        <Download size={16} /> Download {sample.name}
+      </a>
+    </section>
+  );
+}
+
 export function Detail() {
   const { id } = useParams();
   const { experiences, loading, error } = useApp();
@@ -443,6 +482,7 @@ export function Detail() {
               ))}
             </section>
           ))}
+          {e.provenance === "local" && <LocalWorkSample id={e.id} />}
           {playbook && (
             <section
               className="detail-section work-sample"
@@ -529,501 +569,6 @@ function relatedScore(a: Experience, b: Experience) {
     Number(a.industry === b.industry) * 3 +
     Number(a.role_category === b.role_category) * 3 +
     split(a.tools).filter((s) => split(b.tools).includes(s)).length
-  );
-}
-
-type Draft = Omit<Submission, "consent_to_publish"> & {
-  consent_to_publish: boolean;
-};
-const emptyDraft: Draft = {
-  experience_type: "Internship",
-  role_title: "",
-  company: "",
-  industry: "",
-  role_category: "Analytics",
-  year: 2026,
-  duration: "",
-  work_arrangement: "Hybrid",
-  responsibilities: "",
-  projects: "",
-  typical_day: "",
-  tools: "",
-  challenges: "",
-  solutions: "",
-  valuable_skills: "",
-  lessons_learned: "",
-  advice: "",
-  contributor_display_name: "",
-  anonymity_preference: "Anonymous",
-  consent_to_publish: false,
-};
-const fieldsByStep = [
-  [
-    "experience_type",
-    "role_title",
-    "company",
-    "industry",
-    "role_category",
-    "year",
-    "duration",
-    "work_arrangement",
-  ],
-  ["responsibilities", "projects", "typical_day", "tools"],
-  ["challenges", "solutions", "valuable_skills", "lessons_learned", "advice"],
-  ["anonymity_preference", "contributor_display_name", "consent_to_publish"],
-];
-const fieldLabels: Record<string, string> = {
-  experience_type: "Experience type",
-  role_title: "Role title",
-  company: "Company or organization",
-  industry: "Industry",
-  role_category: "Role category",
-  year: "Year",
-  duration: "Duration",
-  work_arrangement: "Work arrangement",
-  responsibilities: "What were your main responsibilities?",
-  projects: "What projects and daily outputs did you produce?",
-  typical_day: "What was your daily or weekly SOP?",
-  tools: "What tools and technical methods did you use?",
-  challenges: "What was your biggest challenge?",
-  solutions: "How did you overcome it?",
-  valuable_skills: "What skills were most valuable?",
-  lessons_learned: "What do you wish you had known before starting?",
-  advice:
-    "What advice would you give someone preparing for a similar opportunity?",
-};
-const fieldPrompts: Record<string, string> = {
-  responsibilities:
-    "Who used your analysis, what decision did it support, and what did you personally own? Distinguish your work from the team’s work.",
-  projects:
-    "Name the deliverable (query, notebook, dashboard, report), its grain and metric definition, how often you produced it, and what your reviewer checked. You can paste a short work sample you have permission to share, or recreate it with synthetic data.",
-  typical_day:
-    "Walk through the day in order: trigger or time → input → exact tool/operation → quality check → output → handoff. Include refresh checks, meetings, blockers, and review cadence.",
-  tools:
-    "Include methods, not just tool names: e.g. SQL — ROW_NUMBER, LEFT JOIN, cohort windows; pandas — merge validation; Power BI — DAX DISTINCTCOUNT and filter context.",
-  challenges:
-    "Describe one specific failure or ambiguity: duplicate join keys, late events, leakage, conflicting definitions, or a stakeholder constraint. How did you notice it?",
-  solutions:
-    "Give the diagnostic steps, exact fix, validation, and remaining limitation. Separate observed results from estimates and hypotheses.",
-  valuable_skills:
-    "Which technical and business skills did you use repeatedly, and for what task? Say what you needed on day one versus what you learned during the internship.",
-  lessons_learned:
-    "What did the job description leave out? Share a metric trap, access dependency, review expectation, or handoff detail that would have saved you time.",
-  advice:
-    "Give a practice task with a specific output and acceptance check. Which SQL operations, Python/R methods, BI calculations, or domain concepts should an MSBA student learn first?",
-};
-export function Share() {
-  const { refresh, toast } = useApp();
-  const navigate = useNavigate();
-  const [step, setStep] = useState(0);
-  const [draft, setDraft] = useState<Draft>(emptyDraft);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState("");
-  const [success, setSuccess] = useState<{
-    id: string;
-    processing: string;
-  } | null>(null);
-  const [requestId, setRequestId] = useState(() => crypto.randomUUID());
-  const lock = useRef(false);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  useEffect(() => {
-    track("submission_start");
-  }, []);
-  function update(key: string, value: unknown) {
-    setDraft((d) => ({ ...d, [key]: value }));
-    setErrors((e) => ({ ...e, [key]: "" }));
-  }
-  function validate() {
-    const parsed = submissionSchema.safeParse(draft);
-    const next: Record<string, string> = {};
-    if (!parsed.success)
-      parsed.error.issues.forEach((i) => {
-        const key = String(i.path[0]);
-        if (fieldsByStep[step].includes(key)) next[key] = i.message;
-      });
-    setErrors(next);
-    return !Object.keys(next).length;
-  }
-  function move(n: number) {
-    setStep(n);
-    setErrors({});
-    setTimeout(() => titleRef.current?.focus(), 0);
-  }
-  async function submit() {
-    if (lock.current) return;
-    if (!validate()) return;
-    const result = submissionSchema.safeParse(draft);
-    if (!result.success) {
-      setFailure(
-        "Some required fields are missing. Return to the previous steps and review your answers.",
-      );
-      return;
-    }
-    lock.current = true;
-    setBusy(true);
-    setFailure("");
-    try {
-      const saved = await submitExperience(result.data, requestId);
-      track("submission_success");
-      setSuccess(saved);
-      await refresh();
-      toast(
-        live
-          ? "Submission saved for private moderation."
-          : "Experience saved to this browser.",
-      );
-    } catch (e) {
-      setFailure((e as Error).message);
-    } finally {
-      setBusy(false);
-      lock.current = false;
-    }
-  }
-  if (success)
-    return (
-      <div className="container page narrow">
-        <div className="success-panel">
-          <CheckCircle2 size={48} />
-          <Eyebrow>YOUR EXPERIENCE CAN MAKE A DIFFERENCE</Eyebrow>
-          <h1>
-            {live
-              ? "Thanks for paying it forward."
-              : "Your local demo submission is saved."}
-          </h1>
-          <p>
-            {live
-              ? "Your contribution was saved to the database and is awaiting moderation. It will appear in the library after the project team publishes it."
-              : "This submission is stored only in this browser. It has not been shared with a server or other students."}
-          </p>
-          <div className="notice">Processing: {success.processing}</div>
-          {!live && (
-            <ButtonLink to={`/experiences/${success.id}`}>
-              See experience & template insights
-            </ButtonLink>
-          )}
-          {live && (
-            <ButtonLink to="/experiences">
-              Explore published experiences
-            </ButtonLink>
-          )}
-          <button
-            className="text-link"
-            onClick={() => {
-              setDraft(emptyDraft);
-              setSuccess(null);
-              setRequestId(crypto.randomUUID());
-              move(0);
-            }}
-          >
-            Share another experience <Plus size={16} />
-          </button>
-        </div>
-      </div>
-    );
-  return (
-    <div className="container page">
-      <div className="page-heading">
-        <Eyebrow>PAY YOUR EXPERIENCE FORWARD</Eyebrow>
-        <h1>Your story. Someone’s head start.</h1>
-        <p>
-          Share your routine, daily outputs, technical methods, and the details
-          you wish you’d had before your first day.
-        </p>
-      </div>
-      <div className="share-layout">
-        <aside className="share-sidebar">
-          <div className="form-steps">
-            {[
-              "The basics",
-              "Your experience",
-              "Lessons & advice",
-              "Privacy & preview",
-            ].map((label, i) => (
-              <div
-                key={label}
-                className={i === step ? "current" : i < step ? "done" : ""}
-              >
-                <span>{i < step ? <Check size={17} /> : i + 1}</span>
-                <div>
-                  <small>STEP {i + 1}</small>
-                  <strong>{label}</strong>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="notice">
-            <ShieldCheck size={23} />
-            <strong>Share insight, protect privacy.</strong>
-            <p>
-              Leave out confidential employer information, private client data,
-              trade secrets, and personal information about others.
-            </p>
-          </div>
-          {!live && (
-            <button
-              type="button"
-              className="button secondary"
-              onClick={() => {
-                const {
-                  id: _id,
-                  created_at: _at,
-                  status: _status,
-                  insights: _insights,
-                  model_version: _model,
-                  provenance: _provenance,
-                  ...sample
-                } = demoExperiences[0];
-                void [_id, _at, _status, _insights, _model, _provenance];
-                setDraft({ ...sample, consent_to_publish: false });
-                setErrors({});
-                toast(
-                  "Fictional example filled. Review it and choose consent before submitting.",
-                );
-              }}
-            >
-              Fill fictional demo example <Sparkles size={15} />
-            </button>
-          )}
-        </aside>
-        <form
-          className="form-card"
-          noValidate
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (step < 3) {
-              if (validate()) move(step + 1);
-            } else void submit();
-          }}
-        >
-          <div className="form-heading">
-            <span>STEP {step + 1} OF 4</span>
-            <h2 ref={titleRef} tabIndex={-1}>
-              {
-                [
-                  "Let’s start with the basics.",
-                  "What did the work really look like?",
-                  "The lessons that stay with you.",
-                  "Make it yours. Then pay it forward.",
-                ][step]
-              }
-            </h2>
-            <p>
-              {
-                [
-                  "Give future students a little context.",
-                  "The practical details make all the difference.",
-                  "Your honest perspective is the most useful part.",
-                  "Choose how you appear, review your story, and give permission to share.",
-                ][step]
-              }
-            </p>
-          </div>
-          <div className={step === 0 ? "form-grid" : "form-fields"}>
-            {step < 3 ? (
-              fieldsByStep[step].map((key) => {
-                const options =
-                  key === "experience_type"
-                    ? [...experienceTypes]
-                    : key === "work_arrangement"
-                      ? ["Hybrid", "Remote", "On-site"]
-                      : key === "role_category"
-                        ? [
-                            "Analytics",
-                            "Consulting",
-                            "Data Science",
-                            "Product",
-                            "Marketing",
-                            "Business Intelligence",
-                            "Operations",
-                            "Other",
-                          ]
-                        : null;
-                return (
-                  <label key={key}>
-                    {fieldLabels[key]}
-                    {key !== "work_arrangement" && (
-                      <span className="required"> *</span>
-                    )}
-                    {options ? (
-                      <select
-                        value={String(draft[key as keyof Draft])}
-                        onChange={(e) => update(key, e.target.value)}
-                      >
-                        {options.map((v) => (
-                          <option key={v}>{v}</option>
-                        ))}
-                      </select>
-                    ) : step === 0 ? (
-                      <input
-                        type={key === "year" ? "number" : "text"}
-                        min={key === "year" ? 2000 : undefined}
-                        max={key === "year" ? 2100 : undefined}
-                        maxLength={key === "duration" ? 80 : 120}
-                        value={String(draft[key as keyof Draft])}
-                        onChange={(e) =>
-                          update(
-                            key,
-                            key === "year"
-                              ? Number(e.target.value)
-                              : e.target.value,
-                          )
-                        }
-                        aria-invalid={!!errors[key]}
-                        aria-describedby={
-                          errors[key] ? `${key}-error` : undefined
-                        }
-                        placeholder={
-                          key === "duration"
-                            ? "e.g. 12 weeks"
-                            : key === "role_title"
-                              ? "e.g. Business Analytics Intern"
-                              : undefined
-                        }
-                      />
-                    ) : (
-                      <textarea
-                        value={String(draft[key as keyof Draft])}
-                        maxLength={5000}
-                        rows={
-                          key === "tools" || key === "valuable_skills" ? 2 : 4
-                        }
-                        onChange={(e) => update(key, e.target.value)}
-                        aria-invalid={!!errors[key]}
-                        aria-describedby={
-                          errors[key] ? `${key}-error` : undefined
-                        }
-                        placeholder={fieldPrompts[key]}
-                      />
-                    )}
-                    {errors[key] && (
-                      <small className="error" id={`${key}-error`}>
-                        {errors[key]}
-                      </small>
-                    )}
-                  </label>
-                );
-              })
-            ) : (
-              <>
-                <fieldset>
-                  <legend>How would you like to appear?</legend>
-                  <div className="radio-options">
-                    {["Anonymous", "First name only", "Display name"].map(
-                      (v) => (
-                        <label key={v}>
-                          <input
-                            type="radio"
-                            name="privacy"
-                            checked={draft.anonymity_preference === v}
-                            onChange={() => update("anonymity_preference", v)}
-                          />
-                          {v}
-                        </label>
-                      ),
-                    )}
-                  </div>
-                </fieldset>
-                {draft.anonymity_preference !== "Anonymous" && (
-                  <label>
-                    {draft.anonymity_preference === "First name only"
-                      ? "First name"
-                      : "Display name"}
-                    <input
-                      maxLength={80}
-                      value={draft.contributor_display_name}
-                      onChange={(e) =>
-                        update("contributor_display_name", e.target.value)
-                      }
-                      aria-invalid={!!errors.contributor_display_name}
-                    />
-                    {errors.contributor_display_name && (
-                      <small className="error">
-                        {errors.contributor_display_name}
-                      </small>
-                    )}
-                  </label>
-                )}
-                <div className="submission-preview">
-                  <div className="eyebrow">YOUR CONTRIBUTION PREVIEW</div>
-                  <h3>{draft.role_title}</h3>
-                  <p>
-                    {draft.company} · {draft.industry} · {draft.year} ·{" "}
-                    {draft.duration}
-                  </p>
-                  <p className="muted">
-                    {draft.experience_type} · {draft.work_arrangement} ·{" "}
-                    {draft.role_category}
-                  </p>
-                  {fieldsByStep[1].concat(fieldsByStep[2]).map((k) => (
-                    <div key={k}>
-                      <h4>{fieldLabels[k]}</h4>
-                      <p>{String(draft[k as keyof Draft])}</p>
-                    </div>
-                  ))}
-                  <p>
-                    <strong>Shared by:</strong>{" "}
-                    {draft.anonymity_preference === "Anonymous"
-                      ? "Anonymous contributor"
-                      : draft.anonymity_preference === "First name only"
-                        ? draft.contributor_display_name.split(/\s+/)[0]
-                        : draft.contributor_display_name}
-                  </p>
-                </div>
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={draft.consent_to_publish}
-                    onChange={(e) =>
-                      update("consent_to_publish", e.target.checked)
-                    }
-                  />
-                  <span>
-                    I consent to sharing this content with EchoPath users
-                    {!live ? " in this local demo" : ""}. I have removed
-                    confidential information and other people’s personal
-                    details.
-                  </span>
-                </label>
-                {errors.consent_to_publish && (
-                  <small className="error" role="alert">
-                    {errors.consent_to_publish}
-                  </small>
-                )}
-                <div className="notice">
-                  {live
-                    ? "Your submission will be stored privately until reviewed and published by the project team. AI processing, when enabled, sends the experience text to OpenAI."
-                    : "Demo mode: the experience and template insights will be saved only in this browser. No real AI processing takes place."}
-                </div>
-              </>
-            )}
-          </div>
-          {failure && (
-            <p role="alert" className="error">
-              {failure}
-            </p>
-          )}
-          <div className="form-actions">
-            <button
-              className="text-link"
-              type="button"
-              onClick={() => (step ? move(step - 1) : navigate("/experiences"))}
-            >
-              <ArrowLeft size={17} />
-              {step ? "Back" : "Cancel"}
-            </button>
-            <button className="button" disabled={busy}>
-              {busy
-                ? "Saving submission…"
-                : step === 3
-                  ? "Submit experience"
-                  : "Continue"}
-              <ArrowRight size={17} />
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
   );
 }
 
