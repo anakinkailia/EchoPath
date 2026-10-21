@@ -312,7 +312,9 @@ small {
 }
 .brand-word {
   display: inline-block;
-  padding-bottom: 0.08em;
+  /* Alkatra's tall ascenders sit the letters high; centre them on the mark. */
+  position: relative;
+  top: 0.08em;
 }
 .brand-path {
   color: #c4b5fd;
