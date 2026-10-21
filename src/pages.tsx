@@ -9,7 +9,6 @@ import {
   Compass,
   Download,
   Filter,
-  GitBranch,
   Mail,
   MapPin,
   Search,
@@ -17,7 +16,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { ButtonLink, ExperienceCard, Tags, useApp } from "./ui";
+import { ButtonLink, EchoMark, ExperienceCard, Tags, useApp } from "./ui";
 import { CompanyMark } from "./company-mark";
 import {
   displayName,
@@ -604,7 +603,7 @@ export function About() {
         </div>
         <aside className="about-cards" aria-label="About the project">
           <div className="insight-panel">
-            <GitBranch size={36} />
+            <EchoMark size={36} />
             <h3>
               Real experiences.
               <br />

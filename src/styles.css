@@ -10,7 +10,7 @@
   --font-display: var(--font-body);
   --font-label: var(--font-body);
   --font-headline: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-wordmark: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-wordmark: "Alkatra", "Nunito", ui-rounded, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
   font-family: var(--font-body);
   color: #dbd2e7;
@@ -302,13 +302,20 @@ small {
 }
 .brand {
   font-family: var(--font-wordmark);
-  font-size: 24px;
-  font-weight: 750;
-  letter-spacing: -1px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   display: inline-flex;
   align-items: center;
   line-height: 1;
-  gap: 9px;
+  gap: 10px;
+}
+.brand-word {
+  display: inline-block;
+  padding-bottom: 0.08em;
+}
+.brand-path {
+  color: #c4b5fd;
 }
 .brand-icon {
   background: #5d2899;
@@ -317,10 +324,6 @@ small {
   display: flex;
   padding: 7px;
   box-shadow: 0 3px 8px #572d8726;
-}
-.brand-dot {
-  margin-left: -9px;
-  color: var(--ink-muted);
 }
 .mode-bar {
   max-width: 1200px;
@@ -848,7 +851,7 @@ footer {
   padding: 35px 0;
 }
 .footer-top .brand {
-  font-size: 19px;
+  font-size: 22px;
 }
 .footer-top .brand-icon {
   padding: 5px;
@@ -2562,14 +2565,13 @@ footer {
   border-top-color: #ffffff12;
 }
 .brand-icon {
-  background: linear-gradient(140deg, #3b0f8c, #1e0848);
-  border: 1px solid #7c3aed55;
+  color: #f5f0ff;
+  background: linear-gradient(145deg, #8b5cf6, #5b21b6 48%, #2e1065);
+  border: 1px solid #a78bfa66;
   box-shadow:
+    inset 0 1px 0 #ffffff40,
     0 0 0 1px #00000080,
-    0 4px 18px #4c1d9580;
-}
-.brand-dot {
-  color: #7c3aed;
+    0 6px 20px -4px #6d28d9aa;
 }
 .button {
   background: #4c1d95;

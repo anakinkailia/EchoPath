@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, GitBranch } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { type Experience } from "./domain";
 import { CompanyMark } from "./company-mark";
 type Context = {
@@ -12,13 +12,53 @@ type Context = {
 };
 export const AppContext = createContext<Context>(null!);
 export const useApp = () => useContext(AppContext);
+// The EchoPath mark: an origin dot, two echoes rippling out, and the next
+// stop on the path. Same drawing as public/favicon.svg.
+export function EchoMark({ size = 22 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle cx="5.5" cy="15.5" r="2.4" fill="currentColor" />
+      <path
+        d="M9.2 11.4a5.4 5.4 0 0 1 0 8.2"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity="0.9"
+      />
+      <path
+        d="M12.6 7.8a10 10 0 0 1 0 15.4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity="0.55"
+      />
+      <path
+        d="M14.5 9.2 C16 6.6 17.6 5.2 19.4 4.6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeDasharray="0.1 3"
+        opacity="0.8"
+      />
+      <circle cx="19.6" cy="4.5" r="2" fill="currentColor" />
+    </svg>
+  );
+}
 export function Brand() {
   return (
     <Link className="brand" to="/" aria-label="EchoPath home">
       <span className="brand-icon">
-        <GitBranch size={23} />
+        <EchoMark />
       </span>
-      EchoPath<span className="brand-dot">.</span>
+      <span className="brand-word">
+        Echo<span className="brand-path">Path</span>
+      </span>
     </Link>
   );
 }

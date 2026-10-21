@@ -100,7 +100,7 @@
     color: #fff;
   }
   [data-theme="light"]
-    :is(.brand-dot, .text-link, .filter-help a, .about-contact a) {
+    :is(.brand-path, .text-link, .filter-help a, .about-contact a) {
     color: #6740a9;
   }
   [data-theme="light"] :is(.text-link:hover, .about-contact a:hover) {
