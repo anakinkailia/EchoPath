@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowDown,
   ArrowRight,
   BookOpen,
   Check,
@@ -219,12 +218,6 @@ function Hero() {
             Share yours
           </Link>
         </div>
-      </div>
-      <div className="lp-hero-foot" aria-hidden="true">
-        <span>Real experiences. Smarter next steps.</span>
-        <span>
-          Scroll to explore <ArrowDown size={13} />
-        </span>
       </div>
     </section>
   );
