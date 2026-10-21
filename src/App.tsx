@@ -9,7 +9,6 @@ import {
   Menu,
   MessageSquare,
   Plus,
-  Sparkles,
   X,
 } from "lucide-react";
 import { type Experience } from "./domain";
@@ -212,15 +211,6 @@ export default function App() {
           </button>
         </div>
       </header>
-      <div className="mode-bar">
-        <span className="status-dot" />
-        {live
-          ? "Community mode · published submissions only"
-          : "Demo workspace · fictional examples & browser-local saves"}
-        <span className="mode-right">
-          Built for the MSBA community <Sparkles size={13} />
-        </span>
-      </div>
       <main id="main">
         <Routes>
           <Route path="/" element={<Home />} />

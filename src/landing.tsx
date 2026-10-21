@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowDown,
   ArrowRight,
   BookOpen,
   Check,
   Compass,
+  Search,
   Sparkles,
 } from "lucide-react";
 import { ExperienceCard, useApp } from "./ui";
@@ -41,36 +42,6 @@ function useReveal(root: React.RefObject<HTMLElement | null>, deps: unknown[]) {
     return () => io.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
-}
-
-function CountUp({ value }: { value: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const [shown, setShown] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || reducedMotion() || !("IntersectionObserver" in window)) {
-      setShown(value);
-      return;
-    }
-    let frame = 0;
-    const io = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      io.disconnect();
-      const start = performance.now();
-      const tick = (now: number) => {
-        const t = Math.min(1, (now - start) / 1400);
-        setShown(Math.round(value * (1 - Math.pow(1 - t, 3))));
-        if (t < 1) frame = requestAnimationFrame(tick);
-      };
-      frame = requestAnimationFrame(tick);
-    });
-    io.observe(el);
-    return () => {
-      io.disconnect();
-      cancelAnimationFrame(frame);
-    };
-  }, [value]);
-  return <span ref={ref}>{shown}</span>;
 }
 
 // Slowly rising, twinkling motes of light behind the hero copy.
@@ -190,14 +161,6 @@ function Hero() {
         ))}
       </div>
       <div className="lp-hero-copy">
-        <div
-          className="lp-pill lp-fade"
-          style={{ "--i": 0 } as React.CSSProperties}
-        >
-          <span className="lp-pill-dot" />
-          Built for the USC Marshall MSBA community
-          <span className="lp-pill-tag">Beta</span>
-        </div>
         <h1>
           <span className="lp-line">
             {words.map((w, i) => (
@@ -285,56 +248,166 @@ function Helix() {
   );
 }
 
+// Sets --p (0 → 1) on the element as it scrolls through the viewport.
+function useScrollProgress(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (reducedMotion()) {
+      el.style.setProperty("--p", "1");
+      return;
+    }
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const travel = Math.max(1, r.height - vh);
+      const p = (vh * 0.7 - r.top) / (vh * 0.7 + travel * 0.6);
+      el.style.setProperty("--p", Math.min(1, Math.max(0, p)).toFixed(3));
+    };
+    const queue = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", queue, { passive: true });
+    window.addEventListener("resize", queue);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", queue);
+      window.removeEventListener("resize", queue);
+    };
+  }, [ref]);
+}
+
+const examples = [
+  "Business analytics internship",
+  "Consulting project with Power BI",
+  "Data science in healthcare",
+  "Product strategy at a tech company",
+];
+
+// Types and erases example queries as the input's placeholder.
+function useTypingPlaceholder(active: boolean) {
+  const [text, setText] = useState(examples[0]);
+  useEffect(() => {
+    if (!active || reducedMotion()) return;
+    let item = 0;
+    let len = 0;
+    let deleting = false;
+    let timer = 0;
+    const step = () => {
+      const target = examples[item];
+      len += deleting ? -1 : 1;
+      setText(target.slice(0, len));
+      let wait = deleting ? 28 : 55;
+      if (!deleting && len === target.length) {
+        deleting = true;
+        wait = 1800;
+      } else if (deleting && len === 0) {
+        deleting = false;
+        item = (item + 1) % examples.length;
+        wait = 350;
+      }
+      timer = window.setTimeout(step, wait);
+    };
+    timer = window.setTimeout(step, 600);
+    return () => clearTimeout(timer);
+  }, [active]);
+  return text;
+}
+
+function SearchSection() {
+  const { experiences } = useApp();
+  const navigate = useNavigate();
+  const ref = useRef<HTMLElement>(null);
+  const [query, setQuery] = useState("");
+  useScrollProgress(ref);
+  const placeholder = useTypingPlaceholder(!query);
+  const counts = new Map<string, [string, number]>();
+  for (const e of experiences)
+    for (const tool of split(e.tools)) {
+      const key = tool.toLowerCase();
+      counts.set(key, [
+        counts.get(key)?.[0] ?? tool,
+        (counts.get(key)?.[1] ?? 0) + 1,
+      ]);
+    }
+  const chips = [...counts.values()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([label]) => label);
+  const go = (q: string) =>
+    navigate(
+      q.trim()
+        ? `/experiences?q=${encodeURIComponent(q.trim())}`
+        : "/experiences",
+    );
+  return (
+    <section ref={ref} className="lp-search">
+      <div className="lp-search-stage">
+        <div className="lp-search-rings" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+        <form
+          role="search"
+          className="lp-search-bar"
+          onSubmit={(e) => {
+            e.preventDefault();
+            go(query);
+          }}
+        >
+          <Search size={22} aria-hidden="true" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={placeholder}
+            aria-label="Search the experience library"
+            maxLength={120}
+          />
+          <button className="lp-cta" type="submit">
+            Search
+            <span className="lp-cta-icon">
+              <ArrowRight size={16} />
+            </span>
+          </button>
+        </form>
+        <div className="lp-search-chips">
+          {chips.map((c, i) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => go(c)}
+              style={
+                {
+                  "--i": i,
+                  "--sx": `${((i * 137) % 600) - 300}px`,
+                  "--sy": `${((i * 89) % 260) + 120}px`,
+                  "--sr": `${((i * 53) % 60) - 30}deg`,
+                } as React.CSSProperties
+              }
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Home() {
   const { experiences, loading, error } = useApp();
   const page = useRef<HTMLDivElement>(null);
   useReveal(page, [loading]);
-  const industries = new Set(experiences.map((e) => e.industry)).size;
-  const skills = new Set(
-    experiences.flatMap((e) =>
-      split(`${e.tools},${e.valuable_skills}`).map((s) => s.toLowerCase()),
-    ),
-  ).size;
-  const stats: [number, string, string][] = [
-    [experiences.length, "", "experiences in the library"],
-    [industries, "", "industries represented"],
-    [skills, "+", "tools & skills mentioned"],
-    [12, " wks", "maximum roadmap length"],
-  ];
   return (
     <div className="lp" ref={page}>
       <Hero />
 
-      <section className="lp-stats">
-        <div className="lp-container">
-          <h2 data-reveal>
-            Every path leaves a trail.
-            <br />
-            <span>Follow the ones that lead somewhere.</span>
-          </h2>
-          <p className="lp-sub" data-reveal>
-            {live
-              ? "Counts below come from published community submissions."
-              : "Counts below come from this prototype’s fictional demo library."}
-          </p>
-          <div className="lp-stat-grid">
-            {stats.map(([n, suffix, label], i) => (
-              <div
-                key={label}
-                data-reveal
-                style={{ "--i": i } as React.CSSProperties}
-              >
-                <strong>
-                  {loading ? "—" : <CountUp value={n} />}
-                  <em>{suffix}</em>
-                </strong>
-                <span>{label}</span>
-              </div>
-            ))}
-            <div className="lp-stat-glow" aria-hidden="true" />
-          </div>
-        </div>
-      </section>
+      <SearchSection />
 
       <div className="lp-marquee" aria-hidden="true">
         <div>
