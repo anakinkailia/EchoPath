@@ -8,7 +8,7 @@
   --lp-purple: #6d28d9;
   --lp-deep: #2e1065;
   --lp-violet: #a78bfa;
-  --lp-display: "Inter Tight", "Segoe UI", Arial, sans-serif;
+  --lp-display: var(--font-display);
   background: var(--lp-bg);
   color: var(--lp-ink);
   overflow-x: clip;
@@ -631,6 +631,7 @@
 }
 .lp-kicker {
   display: block;
+  font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;

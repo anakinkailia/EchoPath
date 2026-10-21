@@ -1,9 +1,14 @@
 @import "tailwindcss";
 @theme {
-  --font-sans: "Segoe UI", Arial, sans-serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
 }
 :root {
-  font-family: "Segoe UI", Arial, sans-serif;
+  /* Type system: Geist for display, body and UI; Geist Mono only for small labels. */
+  --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
+  font-family: var(--font-body);
+  font-feature-settings: "ss01", "cv11";
   color: #dbd2e7;
   background: #110c17;
   font-synthesis: none;
@@ -59,6 +64,7 @@ p {
 h1,
 h2,
 h3 {
+  font-family: var(--font-display);
   line-height: 1.22;
   letter-spacing: -0.035em;
 }
@@ -241,9 +247,10 @@ small {
   background: #17101e;
 }
 .eyebrow {
-  font-size: 10px;
-  letter-spacing: 1.8px;
-  font-weight: 750;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 1.4px;
+  font-weight: 500;
   color: #ac96c6;
   display: flex;
   align-items: center;
@@ -306,46 +313,6 @@ small {
 .brand-dot {
   margin-left: -9px;
   color: #ac96c6;
-}
-#root > header {
-  background: #0e0a12ed;
-  border-bottom: 1px solid var(--border);
-  position: relative;
-  z-index: 10;
-}
-.nav-shell {
-  max-width: 1280px;
-  padding: 19px 40px;
-  margin: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 35px;
-}
-nav {
-  display: flex;
-  align-items: center;
-  gap: 29px;
-  margin-left: auto;
-  margin-right: auto;
-}
-nav a {
-  font-size: 12px;
-  color: #ac96c6;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-nav a:hover,
-nav a.active {
-  color: #aa99e0;
-}
-.nav-cta {
-  font-size: 11px;
-  padding: 10px 14px;
-}
-.mobile-menu {
-  display: none;
 }
 .mode-bar {
   max-width: 1200px;
@@ -1954,14 +1921,6 @@ dialog .section-heading {
     padding-left: 28px;
     padding-right: 28px;
   }
-  .nav-shell {
-    padding-left: 28px;
-    padding-right: 28px;
-    gap: 22px;
-  }
-  nav {
-    gap: 20px;
-  }
   .hero {
     gap: 22px;
   }
@@ -2045,40 +2004,11 @@ dialog .section-heading {
     padding-left: 20px;
     padding-right: 20px;
   }
-  .nav-shell {
-    padding: 16px 20px;
-    gap: 15px;
-  }
   .brand {
     font-size: 22px;
   }
   .brand-icon {
     padding: 6px;
-  }
-  .nav-cta {
-    margin-left: auto;
-    font-size: 10px;
-    padding: 9px;
-  }
-  .mobile-menu {
-    display: flex;
-  }
-  nav {
-    display: none;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 70px;
-    background: #0e0a12;
-    border-bottom: 1px solid var(--border);
-    padding: 22px;
-    margin: 0;
-    flex-direction: column;
-    align-items: start;
-    gap: 22px;
-  }
-  nav.open {
-    display: flex;
   }
   .mode-bar {
     padding: 11px 20px;
@@ -2504,7 +2434,7 @@ dialog .section-heading {
   }
 }
 @media print {
-  #root > header,
+  .topbar,
   footer,
   .mode-bar,
   .page-heading,
@@ -2578,13 +2508,6 @@ dialog .section-heading {
 }
 body {
   background: #050308;
-}
-#root > header {
-  background: #050308d9;
-  backdrop-filter: blur(14px);
-  border-bottom-color: #ffffff12;
-  position: sticky;
-  top: 0;
 }
 .mode-bar {
   color: #8d7fa6;

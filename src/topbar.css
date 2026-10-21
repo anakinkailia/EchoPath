@@ -1,0 +1,361 @@
+/* Hallmark · component: navigation (N10 scroll-morph) · genre: atmospheric · theme: EchoPath dark purple
+ * liquid glass by user request (overrides the genre's glass ban)
+ * states: default · hover · focus · active · current · floating · menu-open · reduced-motion
+ */
+:root {
+  --glass-tint: oklch(13% 0.035 295 / 0.52);
+  --glass-tint-strong: oklch(15% 0.05 295 / 0.62);
+  --glass-panel: oklch(12% 0.04 295 / 0.95);
+  --glass-sheen-top: oklch(100% 0 0 / 0.16);
+  --glass-sheen-bottom: oklch(100% 0 0 / 0.02);
+  --glass-rim: oklch(100% 0 0 / 0.14);
+  --glass-rim-soft: oklch(100% 0 0 / 0.06);
+  --glass-specular: oklch(100% 0 0 / 0.3);
+  --glass-glow: oklch(55% 0.24 295 / 0.35);
+  --glass-shadow: oklch(0% 0 0 / 0.65);
+  --nav-ink: oklch(94% 0.012 300);
+  --nav-ink-muted: oklch(78% 0.03 300);
+  --nav-accent-top: oklch(58% 0.23 295);
+  --nav-accent-bottom: oklch(40% 0.2 292);
+  --nav-focus: oklch(80% 0.12 295);
+  --nav-height: 68px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-short: 220ms;
+  --dur-mid: 520ms;
+}
+
+/* Outer bar. Its full-width glass lives on ::before (a sibling layer, not an
+   ancestor filter) so the floating pill can still blur the page behind it. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-block: 0;
+  transition: padding-block var(--dur-mid) var(--ease-out);
+}
+.topbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--glass-tint);
+  border-bottom: 1px solid var(--glass-rim-soft);
+  backdrop-filter: saturate(1.6) blur(18px);
+  -webkit-backdrop-filter: saturate(1.6) blur(18px);
+  transition: opacity var(--dur-mid) var(--ease-out);
+}
+.topbar__inner {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  max-width: 1280px;
+  min-height: var(--nav-height);
+  margin-inline: auto;
+  padding: 12px 32px;
+  border-radius: 0;
+  background-color: transparent;
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+  box-shadow: none;
+  transform: translateY(0);
+  transition:
+    max-width var(--dur-mid) var(--ease-out),
+    min-height var(--dur-mid) var(--ease-out),
+    padding var(--dur-mid) var(--ease-out),
+    border-radius var(--dur-mid) var(--ease-out),
+    background-color var(--dur-mid) var(--ease-out),
+    backdrop-filter var(--dur-mid) var(--ease-out),
+    -webkit-backdrop-filter var(--dur-mid) var(--ease-out),
+    box-shadow var(--dur-mid) var(--ease-out),
+    transform var(--dur-mid) var(--ease-out);
+}
+/* Sheen + refracted rim, faded in only when floating. */
+.topbar__inner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    linear-gradient(
+        180deg,
+        var(--glass-sheen-top),
+        var(--glass-sheen-bottom) 55%
+      )
+      padding-box,
+    linear-gradient(
+        120deg,
+        var(--glass-specular),
+        var(--glass-rim-soft) 30%,
+        var(--glass-glow) 60%,
+        var(--glass-rim) 100%
+      )
+      border-box;
+  border: 1px solid transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-mid) var(--ease-out);
+}
+
+/* Floating pill. Height stays constant: 58 + 2 × 5 = 68 (the default bar). */
+.topbar.is-floating {
+  padding-block: 5px;
+}
+.topbar.is-floating::before {
+  opacity: 0;
+}
+.topbar.is-floating .topbar__inner {
+  max-width: 980px;
+  min-height: calc(var(--nav-height) - 10px);
+  padding: 6px 8px 6px 18px;
+  border-radius: 999px;
+  background-color: var(--glass-tint-strong);
+  backdrop-filter: saturate(1.9) blur(24px);
+  -webkit-backdrop-filter: saturate(1.9) blur(24px);
+  box-shadow:
+    inset 0 1px 0 var(--glass-specular),
+    inset 0 -1px 0 var(--glass-sheen-bottom),
+    0 18px 50px -18px var(--glass-shadow),
+    0 0 40px -10px var(--glass-glow);
+  transform: translateY(10px);
+}
+.topbar.is-floating .topbar__inner::before {
+  opacity: 1;
+}
+
+/* Wordmark */
+.topbar .brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.045em;
+  color: var(--nav-ink);
+  flex-shrink: 0;
+}
+.topbar .brand-icon {
+  padding: 6px;
+  border-radius: 10px;
+}
+.topbar .brand:focus-visible {
+  outline: 2px solid var(--nav-focus);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+/* Links */
+.topbar__links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline: auto;
+}
+.topbar__links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  padding: 9px 15px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--nav-ink-muted);
+  transition:
+    color var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
+}
+.topbar__links a svg {
+  opacity: 0.8;
+}
+.topbar__links a:hover {
+  color: var(--nav-ink);
+  background-color: var(--glass-rim-soft);
+}
+.topbar__links a:active {
+  transform: translateY(1px);
+}
+/* Current page sits on a small glass lens. */
+.topbar__links a.active {
+  color: var(--nav-ink);
+  background: linear-gradient(
+    180deg,
+    var(--glass-sheen-top),
+    var(--glass-sheen-bottom)
+  );
+  box-shadow:
+    inset 0 1px 0 var(--glass-specular),
+    inset 0 0 0 1px var(--glass-rim-soft),
+    0 6px 18px -8px var(--glass-glow);
+}
+.topbar__links a:focus-visible,
+.topbar__cta:focus-visible,
+.topbar__menu:focus-visible {
+  outline: 2px solid var(--nav-focus);
+  outline-offset: 3px;
+  transition: none;
+}
+
+/* Primary action: tinted glass pill */
+.topbar__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 42px;
+  padding: 0 18px 0 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--nav-ink);
+  background: linear-gradient(
+    180deg,
+    var(--nav-accent-top),
+    var(--nav-accent-bottom)
+  );
+  box-shadow:
+    inset 0 1px 0 var(--glass-specular),
+    inset 0 0 0 1px var(--glass-rim),
+    0 8px 24px -10px var(--glass-glow);
+  transition:
+    transform var(--dur-short) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out),
+    filter var(--dur-short) var(--ease-out);
+}
+.topbar__cta:hover {
+  filter: brightness(1.12);
+  box-shadow:
+    inset 0 1px 0 var(--glass-specular),
+    inset 0 0 0 1px var(--glass-rim),
+    0 10px 30px -8px var(--glass-glow);
+}
+.topbar__cta:active {
+  transform: translateY(1px) scale(0.98);
+  filter: brightness(0.95);
+}
+
+/* Mobile menu button */
+.topbar__menu {
+  display: none;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  color: var(--nav-ink);
+  background: linear-gradient(
+    180deg,
+    var(--glass-sheen-top),
+    var(--glass-sheen-bottom)
+  );
+  box-shadow:
+    inset 0 1px 0 var(--glass-specular),
+    inset 0 0 0 1px var(--glass-rim-soft);
+}
+.topbar__menu:hover {
+  background-color: var(--glass-rim-soft);
+}
+.topbar__menu:active {
+  transform: scale(0.96);
+}
+
+@media (max-width: 900px) {
+  .topbar__inner {
+    gap: 14px;
+    padding-inline: 20px;
+  }
+  .topbar__links a {
+    padding-inline: 11px;
+  }
+  .topbar__links a svg {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .topbar__inner {
+    padding-inline: 16px;
+  }
+  .topbar.is-floating .topbar__inner {
+    max-width: calc(100% - 24px);
+    padding-inline: 14px 6px;
+  }
+  .topbar__cta {
+    margin-left: auto;
+    padding: 0 14px 0 12px;
+    font-size: 13px;
+  }
+  .topbar__menu {
+    display: grid;
+  }
+  /* Menu opens as a glass panel under the bar. */
+  .topbar__links {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 12px;
+    right: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    margin: 0;
+    padding: 8px;
+    border-radius: 22px;
+    /* Nested inside the bar, a panel can't blur the page, so it stays near-opaque. */
+    background-color: var(--glass-panel);
+    backdrop-filter: saturate(1.9) blur(24px);
+    -webkit-backdrop-filter: saturate(1.9) blur(24px);
+    box-shadow:
+      inset 0 1px 0 var(--glass-specular),
+      inset 0 0 0 1px var(--glass-rim-soft),
+      0 24px 50px -20px var(--glass-shadow);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px) scale(0.98);
+    transform-origin: top center;
+    transition:
+      opacity var(--dur-short) var(--ease-out),
+      transform var(--dur-short) var(--ease-out),
+      visibility 0s linear var(--dur-short);
+  }
+  .topbar.menu-open .topbar__links {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity var(--dur-short) var(--ease-out),
+      transform var(--dur-short) var(--ease-out);
+  }
+  .topbar__links a {
+    padding: 13px 16px;
+    font-size: 15px;
+  }
+  .topbar__links a svg {
+    display: inline;
+  }
+}
+@media (max-width: 400px) {
+  .topbar__cta span {
+    display: none;
+  }
+  .topbar__cta {
+    padding: 0;
+    width: 42px;
+    justify-content: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .topbar,
+  .topbar::before,
+  .topbar__inner,
+  .topbar__inner::before,
+  .topbar__links,
+  .topbar__links a,
+  .topbar__cta {
+    transition: opacity 150ms linear !important;
+  }
+  .topbar.is-floating .topbar__inner {
+    transform: none;
+  }
+}

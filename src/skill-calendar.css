@@ -28,6 +28,7 @@
   margin-bottom: 38px;
 }
 .sc-title {
+  font-family: var(--font-mono);
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -163,6 +164,7 @@
   margin-bottom: 26px;
 }
 .sc-kicker {
+  font-family: var(--font-mono);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -200,7 +202,6 @@
   text-transform: uppercase;
   color: var(--lp-faint);
   margin: 30px 0 12px;
-  font-family: inherit !important;
 }
 .sc-ghost {
   display: inline-flex;

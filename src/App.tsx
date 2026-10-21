@@ -23,6 +23,7 @@ import { Library, Detail, Share, About } from "./pages";
 import { SkillCalendar } from "./skill-calendar";
 import { Home } from "./landing";
 import "./styles.css";
+import "./topbar.css";
 import { AppContext, useApp, Brand, ButtonLink } from "./ui";
 function Feedback({ close }: { close: () => void }) {
   const [busy, setBusy] = useState(false);
@@ -142,6 +143,29 @@ export class ErrorBoundary extends Component<
     );
   }
 }
+// Toggles the floating glass pill once the page scrolls past 80px.
+function useFloatingNav() {
+  const [floating, setFloating] = useState(false);
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const next = window.scrollY > 80;
+      setFloating((current) => (current === next ? current : next));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+  return floating;
+}
+
 export default function App() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
@@ -150,6 +174,7 @@ export default function App() {
   const [menu, setMenu] = useState(false);
   const [feedback, setFeedback] = useState(false);
   const location = useLocation();
+  const floating = useFloatingNav();
   const refresh = React.useCallback(async () => {
     setLoading(true);
     setError("");
@@ -180,35 +205,43 @@ export default function App() {
       <a href="#main" className="skip-link">
         Skip to content
       </a>
-      <header>
-        <div className="nav-shell">
+      <header
+        className={`topbar ${floating ? "is-floating" : ""} ${menu ? "menu-open" : ""}`}
+      >
+        <div className="topbar__inner">
           <Brand />
           <nav
-            onClick={() => setMenu(false)}
+            id="main-nav"
+            className="topbar__links"
             aria-label="Main navigation"
-            className={menu ? "open" : ""}
+            onClick={() => setMenu(false)}
           >
             <NavLink to="/experiences">
-              <BookOpen size={16} />
+              <BookOpen size={16} aria-hidden="true" />
               Explore experiences
             </NavLink>
             <NavLink to="/roadmap">
-              <Compass size={16} />
+              <Compass size={16} aria-hidden="true" />
               Skill calendar
             </NavLink>
             <NavLink to="/about">About</NavLink>
           </nav>
-          <Link className="button nav-cta" to="/share">
-            <Plus size={17} />
-            Share experience
+          <Link
+            className="topbar__cta"
+            to="/share"
+            aria-label="Share experience"
+          >
+            <Plus size={17} aria-hidden="true" />
+            <span>Share experience</span>
           </Link>
           <button
-            className="icon-button mobile-menu"
+            className="topbar__menu"
             onClick={() => setMenu(!menu)}
-            aria-label="Toggle navigation"
+            aria-label={menu ? "Close navigation" : "Open navigation"}
             aria-expanded={menu}
+            aria-controls="main-nav"
           >
-            <Menu />
+            {menu ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </header>
