@@ -77,6 +77,13 @@ const presetScenarios = [
 ] as const;
 
 type Scenario = { label: string; detail: string };
+type Settings = Pick<PlanRequest, "level" | "intensity" | "start" | "notes">;
+const noteIdeas = [
+  "I learn best from videos",
+  "Focus on interview-style questions",
+  "Include one small portfolio project",
+  "Keep Saturday sessions light",
+];
 type SkillOption = { name: string; count: number; kind: "Tool" | "Skill" };
 
 function loadPlan(): CalendarPlan | null {
@@ -329,8 +336,8 @@ function ScenarioStep({
   experiences: Experience[];
   scenario: Scenario | null;
   setScenario: (s: Scenario) => void;
-  req: Pick<PlanRequest, "level" | "intensity" | "start">;
-  setReq: (r: Pick<PlanRequest, "level" | "intensity" | "start">) => void;
+  req: Settings;
+  setReq: (r: Settings) => void;
   back: () => void;
   create: () => void;
 }) {
@@ -428,6 +435,45 @@ function ScenarioStep({
             onChange={(e) => setReq({ ...req, start: e.target.value })}
           />
         </label>
+      </div>
+      <div className="sc-notes">
+        <label htmlFor="sc-notes-input">
+          Extra instructions for the AI <small>Optional</small>
+        </label>
+        <textarea
+          id="sc-notes-input"
+          rows={3}
+          maxLength={600}
+          value={req.notes}
+          onChange={(e) => setReq({ ...req, notes: e.target.value })}
+          placeholder="e.g. I already know basic SELECT queries. Focus on window functions and timed interview practice, and suggest video courses where possible."
+          aria-describedby="sc-notes-help"
+        />
+        <div className="sc-notes-foot">
+          <div className="sc-note-ideas" aria-label="Add a suggestion">
+            {noteIdeas.map((idea) => (
+              <button
+                key={idea}
+                type="button"
+                disabled={req.notes.includes(idea)}
+                onClick={() =>
+                  setReq({
+                    ...req,
+                    notes: (req.notes.trim()
+                      ? `${req.notes.trim().replace(/[.]?$/, ".")} ${idea}.`
+                      : `${idea}.`
+                    ).slice(0, 600),
+                  })
+                }
+              >
+                + {idea}
+              </button>
+            ))}
+          </div>
+          <small id="sc-notes-help">
+            {req.notes.length}/600 · used by the AI planner, not the template
+          </small>
+        </div>
       </div>
       <footer className="sc-foot">
         <button className="sc-ghost" type="button" onClick={back}>
@@ -638,6 +684,11 @@ function CalendarStep({
                 ? "We couldn’t build your calendar."
                 : `Building your ${req.skill} month…`}
           </h1>
+          {plan?.request.notes && (
+            <p className="sc-your-notes">
+              <b>Your instructions</b> {plan.request.notes}
+            </p>
+          )}
           <p aria-live="polite">
             {plan ? plan.summary : failure ? "" : loadingLines[line]}
           </p>
@@ -827,6 +878,7 @@ export function SkillCalendar() {
     level: saved?.request.level ?? ("Beginner" as PlanRequest["level"]),
     intensity: saved?.request.intensity ?? ("steady" as Intensity),
     start: today(),
+    notes: saved?.request.notes ?? "",
   });
   const [plan, setPlan] = useState<CalendarPlan | null>(saved);
   const [failure, setFailure] = useState("");

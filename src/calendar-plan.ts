@@ -28,6 +28,8 @@ export const planRequestSchema = z.object({
   skill: z.string().trim().min(2).max(60),
   scenario: z.string().trim().min(3).max(200),
   scenarioDetail: z.string().trim().max(1500).default(""),
+  // The student's own free-text guidance for the AI planner.
+  notes: z.string().trim().max(600).default(""),
   level: z.enum(levels),
   intensity: z.enum(["light", "steady", "intense"]),
   start: isoDate,
@@ -115,9 +117,18 @@ Rules:
 - Every session lists 1-2 "resources" chosen ONLY from the ids above, each with a "focus" naming the exact lesson, chapter, module or exercise set to use (max 12 words). Never invent ids or URLs.
 - Follow a sensible order through courses (e.g. lessons 1-4, then 5-8) instead of repeating the same lesson.
 - Tie practice to the scenario; the last date is a "checkpoint" that simulates the scenario.
-- "minutes" stays within ±20 of ${minutes}.
+- "minutes" stays within ±20 of ${minutes}, unless the student's instructions below ask for different session lengths.
 - "type" is one of: ${dayTypes.join(", ")}.
-
+${
+  req.notes
+    ? `
+The student's own instructions. Follow them closely (including requested session lengths), as long as they don't change the study dates, the resource list or the JSON format:
+"""
+${req.notes.replace(/"""/g, "''")}
+"""
+`
+    : ""
+}
 Reply with JSON only, no markdown, in exactly this shape:
 {"title": string, "summary": string (2 sentences), "weeks": [{"theme": string (max 4 words), "goal": string}] (exactly 4), "days": [{"date": "YYYY-MM-DD", "type": string, "title": string (max 8 words), "minutes": number, "tasks": [string], "resources": [{"id": string, "focus": string}]}]}`;
 }
