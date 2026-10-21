@@ -206,9 +206,8 @@ function SourceStep({
         <ShieldCheck size={20} aria-hidden="true" />
         <div>
           <strong>Your contact details stay out.</strong> Emails, phone numbers
-          and links are removed before the text is sent to the AI (Claude via
-          Poe). The text is used only to draft your post and isn’t stored on a
-          server.
+          and links are removed before the text is sent to the AI. The text is
+          used only to draft your post and isn’t stored on a server.
           {text && (
             <details>
               <summary>See exactly what the AI will receive</summary>
@@ -428,7 +427,6 @@ function ReviewStep({
   draft,
   update,
   sample,
-  model,
   busy,
   failure,
   back,
@@ -437,7 +435,6 @@ function ReviewStep({
   draft: Draft;
   update: (k: keyof Draft, v: unknown) => void;
   sample: File | null;
-  model: string;
   busy: boolean;
   failure: string;
   back: () => void;
@@ -452,10 +449,7 @@ function ReviewStep({
   return (
     <>
       <header className="sc-head">
-        <span className="sc-kicker">
-          Step 3 · Review & publish
-          <b className="sc-badge ai">Drafted by AI · {model}</b>
-        </span>
+        <span className="sc-kicker">Step 3 · Review & publish</span>
         <h1>Make it yours.</h1>
         <p>
           Check every section: fix anything the AI got wrong and remove anything
@@ -855,7 +849,6 @@ export function ShareAI() {
               draft={draft}
               update={(k, v) => setDraft((d) => (d ? { ...d, [k]: v } : d))}
               sample={sample}
-              model={model}
               busy={busy}
               failure={failure}
               back={() => go(1)}
