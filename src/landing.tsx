@@ -425,7 +425,7 @@ export function Home() {
             </p>
             <div className="lp-actions">
               <Link className="lp-cta" to="/roadmap">
-                Build my roadmap
+                Build my skill
                 <span className="lp-cta-icon">
                   <Compass size={16} />
                 </span>
