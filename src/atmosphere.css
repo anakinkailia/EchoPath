@@ -29,12 +29,12 @@
     linear-gradient(0deg, #b78af02b, #7135dc0a 14%, transparent 35%);
 }
 .atmosphere__ribbons {
-  opacity: 0.7;
+  opacity: 0.88;
 }
 .atmosphere__vignette {
   background: radial-gradient(
     ellipse 48% 52% at 50% 42%,
-    #050308a6,
+    #05030880,
     transparent 100%
   );
 }
@@ -62,7 +62,7 @@
     width: 180%;
     max-width: none;
     left: -40%;
-    opacity: 0.5;
+    opacity: 0.66;
   }
   .atmosphere__glow {
     background:

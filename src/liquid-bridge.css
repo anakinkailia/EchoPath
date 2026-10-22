@@ -1,0 +1,91 @@
+.lp-opening {
+  position: relative;
+  isolation: isolate;
+}
+.lp-opening > :is(.lp-hero, .lp-search) {
+  z-index: 1;
+}
+.liquid-track {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+.liquid-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: clip;
+}
+.liquid-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.7s;
+}
+.liquid-track[data-renderer="webgl"] .liquid-canvas {
+  opacity: 1;
+}
+.liquid-aura {
+  position: absolute;
+  inset: 4% 4%;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 28%,
+    #7133d51c 47%,
+    #8b5cf616 57%,
+    transparent 73%
+  );
+  opacity: calc(0.9 - var(--liquid-morph, 0) * 0.5);
+}
+.liquid-fallback {
+  position: absolute;
+  width: min(86vw, 780px);
+  height: min(86vw, 780px);
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  opacity: 0.65;
+  filter: drop-shadow(0 0 22px #8550e94d);
+}
+.liquid-track[data-renderer="webgl"] .liquid-fallback {
+  display: none;
+}
+.liquid-track[data-renderer="webgl"][data-motion="full"]
+  ~ .lp-search
+  .lp-search-rings
+  span:first-child {
+  border-color: transparent;
+}
+[data-theme="light"] .liquid-aura {
+  opacity: calc(0.6 - var(--liquid-morph, 0) * 0.3);
+}
+[data-theme="light"] .liquid-fallback {
+  opacity: 0.55;
+}
+@media (max-width: 640px) {
+  .liquid-track[data-renderer="webgl"] .liquid-canvas {
+    opacity: 0.7;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .liquid-track {
+    bottom: auto;
+    height: min(880px, calc(100svh - 110px));
+  }
+  .liquid-sticky {
+    position: relative;
+    height: 100%;
+  }
+  .liquid-canvas {
+    transition: none;
+  }
+}
+@media print {
+  .liquid-track {
+    display: none;
+  }
+}

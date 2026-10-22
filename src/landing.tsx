@@ -11,6 +11,7 @@ import {
 import { ExperienceCard, useApp } from "./ui";
 import { split } from "./domain";
 import { live } from "./store";
+import { LiquidBridge } from "./liquid-bridge";
 import "./landing.css";
 
 const reducedMotion = () =>
@@ -398,9 +399,11 @@ export function Home() {
   useReveal(page, [loading]);
   return (
     <div className="lp" ref={page}>
-      <Hero />
-
-      <SearchSection />
+      <div className="lp-opening">
+        <LiquidBridge />
+        <Hero />
+        <SearchSection />
+      </div>
 
       <div className="lp-marquee" aria-hidden="true">
         <div>

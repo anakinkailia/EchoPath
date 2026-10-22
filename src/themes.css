@@ -228,7 +228,7 @@
     );
   }
   [data-theme="light"] .atmosphere__ribbons {
-    opacity: 0.28;
+    opacity: 0.4;
   }
   [data-theme="light"] #echo-ribbon stop:nth-child(1) {
     stop-color: #a5b4ef;
@@ -261,7 +261,7 @@
     opacity: 0.5;
   }
   [data-theme="light"] .lp-tokens span {
-    color: #735b9d85;
+    color: #735b9daf;
   }
   [data-theme="light"] .lp-tokens span.boxed {
     background: #ffffff60;

@@ -27,6 +27,7 @@ npm.cmd run dev
 ## Product features
 
 - Landing page, experience library, dedicated detail pages, four-step contribution form, preparation roadmap, About page, feedback dialog, and working mobile navigation.
+- A shaded violet liquid loop flows behind the landing headline and becomes the search section's circular orbit as you scroll. One WebGL mesh spans both sections; it pauses outside the opening scene and when the browser is hidden. Reduced-motion preferences show a still form, with an SVG fallback when WebGL is unavailable. Floating symbols and background ribbons have stronger contrast in both themes.
 - Ten complete fictional examples with explicit provenance. Combined text search, experience type, industry, role category, skill and year filters; recent, company and role sorting; related experiences.
 - Explore includes timed daily/weekly SOPs, named deliverables, role-specific technical methods, QA checks, and preparation exercises. Ten original synthetic work samples have previews, downloads, and expected review checks. Public insider accounts and primary technical references are linked separately from fictional scenarios; no verified MSBA submissions are claimed.
 - Required-field validation, privacy choices, explicit sharing consent, full preview, duplicate request protection, honest save status, and a fictional example autofill for fast demonstrations.
