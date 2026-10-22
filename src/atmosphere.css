@@ -29,7 +29,9 @@
     linear-gradient(0deg, #b78af02b, #7135dc0a 14%, transparent 35%);
 }
 .atmosphere__ribbons {
-  opacity: 0.7;
+  /* Translucent, light-like ribbons rather than solid tubes. */
+  opacity: 0.38;
+  mix-blend-mode: screen;
 }
 .atmosphere__vignette {
   background: radial-gradient(
@@ -62,7 +64,7 @@
     width: 180%;
     max-width: none;
     left: -40%;
-    opacity: 0.5;
+    opacity: 0.28;
   }
   .atmosphere__glow {
     background:
