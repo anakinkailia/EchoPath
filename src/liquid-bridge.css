@@ -39,7 +39,7 @@
     #8b5cf616 57%,
     transparent 73%
   );
-  opacity: calc(0.9 - var(--liquid-morph, 0) * 0.5);
+  opacity: calc(0.6 - var(--liquid-morph, 0) * 0.3);
 }
 .liquid-fallback {
   position: absolute;
@@ -49,7 +49,7 @@
   left: 50%;
   transform: translate(-50%, -50%) rotate(-12deg);
   opacity: 0.65;
-  filter: drop-shadow(0 0 22px #8550e94d);
+  filter: drop-shadow(0 0 12px #8550e920);
 }
 .liquid-track[data-renderer="webgl"] .liquid-fallback {
   display: none;

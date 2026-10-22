@@ -9,7 +9,7 @@ const vertexSource = `
   uniform vec2 uScale;
   uniform float uCenter;
   varying mediump vec3 vNormal;
-  varying mediump vec2 vUv;
+  varying mediump vec3 vPosition;
 
   vec3 surface(vec2 uv) {
     float theta = uv.x * 6.2831853;
@@ -40,7 +40,7 @@ const vertexSource = `
     vec3 tangent = surface(aUv + vec2(0.0002, 0.0)) - point;
     vec3 bitangent = surface(aUv + vec2(0.0, 0.0002)) - point;
     vNormal = normalize(cross(tangent, bitangent));
-    vUv = aUv;
+    vPosition = point;
     gl_Position = vec4(point.xy * uScale + vec2(0.0, uCenter), -point.z * 0.3, 1.0);
   }
 `;
@@ -51,31 +51,39 @@ const fragmentSource = `
   uniform mediump float uMorph;
   uniform float uLight;
   varying mediump vec3 vNormal;
-  varying mediump vec2 vUv;
+  varying mediump vec3 vPosition;
 
   void main() {
     vec3 normal = normalize(vNormal);
     vec3 view = vec3(0.0, 0.0, 1.0);
-    vec3 key = normalize(vec3(-0.55, 0.8, 1.2));
-    vec3 rim = normalize(vec3(0.6, -0.75, 0.9));
-    float diffuse = max(0.0, dot(normal, key));
-    float rimLight = max(0.0, dot(normal, rim));
-    float fresnel = pow(1.0 - max(dot(normal, view), 0.0), 2.4);
-    float specular = pow(max(dot(normal, normalize(key + view)), 0.0), 48.0);
-    float lowerShine = pow(max(dot(normal, normalize(rim + view)), 0.0), 25.0);
-    float drift = 0.5 + 0.5 * sin(vUv.x * 6.2831853 + uTime * 0.15);
-    vec3 violet = mix(vec3(0.25, 0.055, 0.57), vec3(0.56, 0.27, 0.91), drift);
-    vec3 pearl = vec3(0.87, 0.74, 1.0);
-    vec3 blueViolet = vec3(0.39, 0.36, 0.97);
-    vec3 color = violet * (0.3 + diffuse * 0.7);
-    color += pearl * (fresnel * 0.4 + specular * 0.8);
-    color += blueViolet * (lowerShine * 0.8 + rimLight * 0.3);
-    float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
-    color += (grain - 0.5) * 0.055 * (1.0 - uMorph);
-    color = mix(color, mix(vec3(0.45, 0.24, 0.76), pearl, specular * 0.7), uLight * 0.32);
-    color = mix(color, mix(vec3(0.48, 0.26, 0.9), pearl, fresnel * 0.45), uMorph * 0.55);
-    float alpha = mix(0.88, 0.68, uMorph) * mix(1.0, 0.72, uLight);
-    gl_FragColor = vec4(color, alpha);
+    float facing = clamp(dot(normal, view), 0.0, 1.0);
+    float fresnel = 0.035 + 0.965 * pow(1.0 - facing, 3.0);
+    vec3 reflected = reflect(-view, normal);
+    vec3 transmitted = refract(-view, normal, 1.0 / 1.45);
+
+    // A quiet, analytic environment bends through the glass. Transparency
+    // carries the page beneath it; reflections stay local instead of forming
+    // continuous bright bands around the tube.
+    vec2 bent = vPosition.xy + transmitted.xy * 0.24;
+    float depth = 0.5 + 0.5 * sin(bent.x * 2.1 + bent.y * 1.4 + uTime * 0.08);
+    vec3 violet = mix(vec3(0.20, 0.12, 0.34), vec3(0.34, 0.25, 0.49), depth);
+    vec3 pearl = vec3(0.73, 0.68, 0.85);
+    float windowLight = pow(max(dot(reflected, normalize(vec3(-0.6, 0.75, 0.28))), 0.0), 22.0);
+    float fillLight = pow(max(dot(reflected, normalize(vec3(0.7, -0.35, 0.55))), 0.0), 8.0);
+    float edgeLight = 0.38 + 0.62 * smoothstep(-0.8, 0.8, reflected.y);
+    float meniscus = pow(1.0 - facing, 9.0);
+    vec3 color = violet * (0.78 + facing * 0.22);
+    color += pearl * (windowLight * 0.22 + fillLight * 0.055);
+    color += mix(vec3(0.43, 0.32, 0.62), pearl, edgeLight) * fresnel * 0.48;
+    color += pearl * meniscus * 0.18;
+    vec3 daylight = mix(vec3(0.62, 0.51, 0.78), vec3(0.90, 0.87, 0.96), facing);
+    color = mix(color, daylight + pearl * windowLight * 0.08, uLight);
+    float alpha = 0.14 + fresnel * 0.5 + windowLight * 0.1;
+    alpha *= mix(1.0, 0.78, uLight);
+    color = mix(color, vec3(0.43, 0.31, 0.65), uMorph * 0.7);
+    alpha = mix(alpha, 0.48 * mix(1.0, 0.72, uLight), uMorph);
+    // Match the canvas and blend mode so transparency is applied only once.
+    gl_FragColor = vec4(color * alpha, alpha);
   }
 `;
 
@@ -113,7 +121,7 @@ export function LiquidBridge() {
       gl = element.getContext("webgl", {
         alpha: true,
         antialias: true,
-        premultipliedAlpha: false,
+        premultipliedAlpha: true,
         powerPreference: "low-power",
       });
     } catch {
@@ -175,7 +183,7 @@ export function LiquidBridge() {
     context.enable(context.DEPTH_TEST);
     context.enable(context.CULL_FACE);
     context.enable(context.BLEND);
-    context.blendFunc(context.SRC_ALPHA, context.ONE_MINUS_SRC_ALPHA);
+    context.blendFunc(context.ONE, context.ONE_MINUS_SRC_ALPHA);
     context.clearColor(0, 0, 0, 0);
     const uniforms = Object.fromEntries(
       ["uTime", "uMorph", "uScale", "uCenter", "uLight"].map((name) => [
@@ -349,22 +357,23 @@ export function LiquidBridge() {
               y2="640"
               gradientUnits="userSpaceOnUse"
             >
-              <stop stopColor="#cbb2ff" />
-              <stop offset="0.42" stopColor="#7133d5" />
-              <stop offset="0.73" stopColor="#6b50e0" />
-              <stop offset="1" stopColor="#c6aaff" />
+              <stop stopColor="#b0a1c9" />
+              <stop offset="0.42" stopColor="#665080" />
+              <stop offset="0.73" stopColor="#786293" />
+              <stop offset="1" stopColor="#a89abd" />
             </linearGradient>
           </defs>
           <path
             d="M 350 82 C 476 38 580 128 590 276 C 652 414 542 552 402 582 C 254 644 112 560 102 420 C 40 286 126 152 254 132 C 290 126 310 100 350 82 Z"
             stroke="url(#liquid-fallback-color)"
+            strokeOpacity="0.5"
             strokeWidth="28"
           />
           <path
             d="M 350 82 C 476 38 580 128 590 276 C 652 414 542 552 402 582 C 254 644 112 560 102 420 C 40 286 126 152 254 132 C 290 126 310 100 350 82 Z"
             stroke="#d4bdff"
-            strokeOpacity="0.55"
-            strokeWidth="2"
+            strokeOpacity="0.25"
+            strokeWidth="1"
           />
         </svg>
         <canvas ref={canvas} className="liquid-canvas" />
