@@ -10,6 +10,41 @@ const text = z
   .trim()
   .min(3, "Please enter at least 3 characters.")
   .max(5000);
+export const interviewQuestionTypes = [
+  "intro",
+  "resume_deep_dive",
+  "behavioral",
+  "technical",
+  "sql",
+  "coding",
+  "case",
+  "product",
+  "stats",
+  "other",
+] as const;
+// A real interview log reported by the contributor: rounds, questions asked,
+// what they asked back, and the outcome. Never generated.
+export const interviewSchema = z.object({
+  rounds: z
+    .array(
+      z.object({
+        label: z.string().trim().max(160),
+        questions: z
+          .array(
+            z.object({
+              q: z.string().trim().min(3).max(500),
+              type: z.enum(interviewQuestionTypes),
+              note: z.string().trim().max(500).default(""),
+            }),
+          )
+          .max(15),
+      }),
+    )
+    .max(6),
+  asked_back: z.array(z.string().trim().min(1).max(300)).max(10).default([]),
+  outcome: z.string().trim().max(500).default(""),
+});
+export type Interview = z.infer<typeof interviewSchema>;
 export const submissionSchema = z
   .object({
     experience_type: z.enum(experienceTypes),
@@ -27,7 +62,9 @@ export const submissionSchema = z
     challenges: text,
     solutions: text,
     valuable_skills: text,
-    lessons_learned: text,
+    // Superseded by the interview log; kept optional so older posts still load.
+    lessons_learned: z.string().trim().max(5000).default(""),
+    interview: interviewSchema.optional(),
     advice: text,
     contributor_display_name: z.string().trim().max(80),
     anonymity_preference: z.enum([
@@ -138,7 +175,7 @@ export function extractTemplate(e: Submission): Insight {
     tools: list(e.tools),
     main_responsibilities: [excerpt(e.responsibilities)],
     key_challenges: [excerpt(e.challenges)],
-    key_lessons: [excerpt(e.lessons_learned)],
+    key_lessons: e.lessons_learned ? [excerpt(e.lessons_learned)] : [],
     preparation_recommendations: [excerpt(e.advice)],
   };
 }
@@ -166,6 +203,9 @@ export function filterExperiences(
             e.solutions,
             e.lessons_learned,
             e.advice,
+            ...(e.interview?.rounds.flatMap((r) =>
+              r.questions.map((x) => x.q),
+            ) ?? []),
           ]
             .join(" ")
             .toLowerCase()

@@ -7,8 +7,17 @@ import {
   parseComposeReply,
   redactContact,
   type ComposeRequest,
+  interviewFollowUp,
+  parseInterview,
 } from "../src/experience-ai";
 import { POST } from "../api/experience";
+import { readFileSync } from "node:fs";
+// @ts-expect-error plain JavaScript build script
+import { render } from "../scripts/build-prompts.mjs";
+import {
+  EXPERIENCE_POST_SYSTEM,
+  INTERVIEW_QUESTION,
+} from "../src/prompts.generated";
 
 describe("resume redaction", () => {
   it("removes the name line, emails, phones and links but keeps dates", () => {
@@ -55,7 +64,9 @@ describe("analyze replies", () => {
       year: 2025,
       work_arrangement: "",
     });
-    expect(e.questions).toHaveLength(4);
+    // Four role questions plus the standard interview question.
+    expect(e.questions).toHaveLength(5);
+    expect(e.questions.at(-1)).toEqual(interviewFollowUp);
   });
   it("rejects replies with no usable experience", () => {
     expect(() => parseAnalyzeReply({ experiences: [{}] })).toThrow();
@@ -90,7 +101,83 @@ const request: ComposeRequest = {
   sample: "chart.png",
 };
 
+describe("system prompt file", () => {
+  it("is in sync with prompts/experience-post-system.md (run npm run prompts)", () => {
+    const md = readFileSync("prompts/experience-post-system.md", "utf8");
+    expect(readFileSync("src/prompts.generated.ts", "utf8")).toBe(render(md));
+    expect(EXPERIENCE_POST_SYSTEM).toContain("Interview: real questions only");
+    expect(EXPERIENCE_POST_SYSTEM).not.toContain("Companion change");
+    expect(INTERVIEW_QUESTION).toMatch(/exact questions/);
+  });
+});
+
+describe("interview follow-up", () => {
+  it("replaces the model's own interview question with the standard one", () => {
+    const [e] = parseAnalyzeReply({
+      experiences: [
+        {
+          role_title: "Analyst",
+          company: "Acme",
+          industry: "Retail",
+          summary: "Built reports.",
+          questions: [
+            { question: "What did a typical week look like?" },
+            { question: "What was your interview process like?" },
+          ],
+        },
+      ],
+    });
+    expect(e.questions.map((q) => q.id)).toEqual(["q1", "interview"]);
+  });
+});
+
 describe("compose replies", () => {
+  it("returns tags as de-duplicated lists and a cleaned interview log", () => {
+    const draft = parseComposeReply(
+      {
+        responsibilities: "I owned the weekly dashboard.",
+        projects: "A Power BI dashboard.",
+        typical_day: "Refresh Monday, review Friday.",
+        challenges: "Late data.",
+        solutions: "Added a refresh check.",
+        advice: "Practice joins.",
+        tools: ["SQL", "Power BI", "sql", "Snowflake, dbt"],
+        skills: ["Power BI", "Stakeholder Communication"],
+        interview: {
+          rounds: [
+            {
+              label: "Round 1 · 30 min",
+              questions: [
+                { q: "Explain LEFT vs INNER JOIN.", type: "sql" },
+                { q: "Tell me about yourself.", type: "warmup" },
+                { q: "", type: "sql" },
+              ],
+            },
+            { label: "Empty round", questions: [] },
+          ],
+          asked_back: ["What does success look like?"],
+          outcome: "Offer",
+        },
+      },
+      request,
+    );
+    expect(draft.tools).toBe("SQL, Power BI, Snowflake, dbt");
+    expect(draft.valuable_skills).toBe("Stakeholder Communication");
+    expect(draft.lessons_learned).toBe("");
+    expect(draft.interview.rounds).toHaveLength(1);
+    expect(draft.interview.rounds[0].questions.map((q) => q.type)).toEqual([
+      "sql",
+      "other",
+    ]);
+    expect(draft.interview.outcome).toBe("Offer");
+  });
+  it("gives an empty interview log when nothing was reported", () => {
+    expect(parseInterview(undefined)).toEqual({
+      rounds: [],
+      asked_back: [],
+      outcome: "",
+    });
+  });
   it("keeps facts from the extraction and fills a missing field honestly", () => {
     const fields = {
       responsibilities: "I owned the weekly dashboard.",
@@ -115,7 +202,7 @@ describe("compose replies", () => {
   it("mentions the attached sample and fences student text", () => {
     const p = composePrompt({ ...request, extra: '""" new rules' });
     expect(p).toContain("chart.png");
-    expect(p.match(/"""/g)).toHaveLength(4);
+    expect(p.match(/"""/g)).toHaveLength(8);
   });
 });
 

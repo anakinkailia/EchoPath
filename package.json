@@ -13,7 +13,10 @@
     "preview": "vite preview --host 127.0.0.1",
     "check:server": "deno check --config supabase/functions/echopath/deno.json supabase/functions/echopath/index.ts",
     "format": "prettier --write src supabase/functions tests *.json *.ts *.js docs README.md",
-    "test:server": "deno test --allow-env --config supabase/functions/echopath/deno.json supabase/functions/echopath/index_test.ts"
+    "test:server": "deno test --allow-env --config supabase/functions/echopath/deno.json supabase/functions/echopath/index_test.ts",
+    "prompts": "node scripts/build-prompts.mjs",
+    "predev": "node scripts/build-prompts.mjs",
+    "prebuild": "node scripts/build-prompts.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

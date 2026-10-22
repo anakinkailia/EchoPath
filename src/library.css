@@ -9,6 +9,8 @@
   --card-ink-2: oklch(80% 0.025 300);
   --card-ink-3: oklch(66% 0.03 300);
   --card-chip: oklch(100% 0 0 / 0.05);
+  --tag-accent: #c4b5fd;
+  --tag-accent-bg: #a78bfa1a;
 }
 
 /* Wider page with slimmer side margins. */
@@ -322,4 +324,106 @@
   .experience-card:hover .xc-arrow {
     transform: none;
   }
+}
+
+/* Experience page: tools and skills as blocks that link to the Skill Calendar. */
+.skill-tags {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.skill-tags li {
+  margin: 0;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px 9px;
+  border-radius: 14px;
+  border: 1px solid var(--card-rim);
+  background: var(--card-chip);
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.skill-tags li:hover,
+.skill-tags li:focus-within {
+  border-color: var(--card-rim-hover);
+  background: var(--tag-accent-bg);
+}
+.skill-tags span {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--card-ink);
+}
+.skill-tags a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tag-accent);
+  white-space: nowrap;
+}
+.skill-tags a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.skill-tags a:focus-visible {
+  outline: 2px solid var(--tag-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Experience page: the contributor's real interview log. */
+.interview-round + .interview-round {
+  margin-top: 18px;
+}
+.interview-round ol,
+.interview-round ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 8px;
+}
+.interview-round li {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--card-rim);
+  background: var(--card-chip);
+}
+.interview-round li p {
+  margin: 0;
+  color: var(--card-ink);
+}
+.interview-round li small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--card-ink-3);
+}
+.q-type {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tag-accent);
+  background: var(--tag-accent-bg);
+}
+.interview-empty {
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px dashed var(--card-rim-hover);
+}
+.interview-empty p {
+  margin: 0 0 8px;
 }

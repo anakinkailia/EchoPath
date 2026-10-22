@@ -84,6 +84,8 @@
     --card-ink-2: #5e526f;
     --card-ink-3: #6b5b7c;
     --card-chip: #7353a50c;
+    --tag-accent: #6740a9;
+    --tag-accent-bg: #6740a914;
   }
   :root[data-theme="light"] .lp {
     --lp-bg: var(--canvas);

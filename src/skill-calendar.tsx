@@ -857,12 +857,17 @@ function CalendarStep({
 export function SkillCalendar() {
   const { experiences, loading } = useApp();
   const [params] = useSearchParams();
-  const [saved] = useState(loadPlan);
-  const [step, setStep] = useState(saved ? 2 : 0);
-  const [max, setMax] = useState(saved ? 2 : 0);
+  // "Train this skill" links pass ?skill=…; start a new plan at the scenario step.
+  const linked = (params.get("skill") ?? "").trim().slice(0, 60);
+  const [saved] = useState(() => (linked.length >= 2 ? null : loadPlan()));
+  const start = linked.length >= 2 ? 1 : saved ? 2 : 0;
+  const [step, setStep] = useState(start);
+  const [max, setMax] = useState(start);
   const [leaving, setLeaving] = useState<"" | "fwd" | "back">("");
   const [dir, setDir] = useState<"fwd" | "back">("fwd");
-  const [picked, setSkill] = useState(saved?.request.skill ?? "");
+  const [picked, setSkill] = useState(
+    linked.length >= 2 ? linked : (saved?.request.skill ?? ""),
+  );
   const [scenario, setScenario] = useState<Scenario | null>(
     saved
       ? { label: saved.request.scenario, detail: saved.request.scenarioDetail }

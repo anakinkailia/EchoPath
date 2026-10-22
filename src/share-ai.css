@@ -535,3 +535,111 @@
     display: none;
   }
 }
+
+/* Review step: tag fields and the interview editor */
+.sh-tags input,
+.sh-round input,
+.sh-sub input,
+.sh-sub textarea,
+.sh-q-row textarea,
+.sh-q-row select {
+  margin-top: 8px;
+  border-radius: 10px;
+  border-color: var(--lp-line);
+  background: #ffffff06;
+  color: var(--lp-ink);
+  font-size: 14px;
+}
+.sh-tags .skill-tags li {
+  padding: 6px 12px;
+}
+.sh-interview {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.sh-interview legend {
+  float: left;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--lp-ink);
+}
+.sh-interview > .sh-note {
+  clear: both;
+  margin-top: 0;
+}
+.sh-round {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--lp-line);
+  background: #ffffff04;
+}
+.sh-round-head,
+.sh-q-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+}
+.sh-q-row {
+  grid-template-columns: 150px minmax(0, 1fr) auto;
+}
+.sh-q-row select {
+  text-transform: capitalize;
+  color-scheme: dark;
+}
+.sh-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-top: 8px;
+  border-radius: 99px;
+  color: var(--lp-soft);
+}
+.sh-icon:hover {
+  background: #ffffff12;
+  color: var(--lp-ink);
+}
+.sh-add {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  border: 1px dashed #a78bfa55;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lp-violet);
+}
+.sh-add:hover {
+  border-color: #c4b5fd;
+  color: var(--lp-ink);
+}
+.sh-icon:focus-visible,
+.sh-add:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 2px;
+}
+.sh-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lp-ink);
+}
+.sh-sub small {
+  font-weight: 500;
+  color: var(--lp-faint);
+  margin-left: 6px;
+}
+@media (max-width: 640px) {
+  .sh-q-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .sh-q-row select {
+    grid-column: 1 / -1;
+  }
+}

@@ -1,7 +1,7 @@
 // Execute the actual migration in embedded PostgreSQL. Hosted gateway behavior still requires Supabase smoke tests.
 // @vitest-environment node
 import { PGlite } from "@electric-sql/pglite";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { demoExperiences } from "../src/data";
 const db = new PGlite();
@@ -9,14 +9,14 @@ beforeAll(async () => {
   await db.exec(
     "create role anon; create role authenticated; create role service_role bypassrls;",
   );
-  const migration = await readFile(
-    "supabase/migrations/202610190001_initial.sql",
-    "utf8",
-  );
-  // PGlite has core gen_random_uuid; pgcrypto is a hosted extension unavailable in this embedded build.
-  await db.exec(
-    migration.replace("create extension if not exists pgcrypto;", ""),
-  );
+  // Apply every migration in order, as `supabase db push` would.
+  for (const file of (await readdir("supabase/migrations")).sort()) {
+    const migration = await readFile(`supabase/migrations/${file}`, "utf8");
+    // PGlite has core gen_random_uuid; pgcrypto is a hosted extension unavailable in this embedded build.
+    await db.exec(
+      migration.replace("create extension if not exists pgcrypto;", ""),
+    );
+  }
   for (let i = 0; i < 2; i++) {
     const {
       insights: _insights,

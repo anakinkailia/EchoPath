@@ -13,7 +13,14 @@ import {
   X,
 } from "lucide-react";
 import { ButtonLink, useApp } from "./ui";
-import { experienceTypes, submissionSchema, type Submission } from "./domain";
+import {
+  experienceTypes,
+  interviewQuestionTypes,
+  split,
+  submissionSchema,
+  type Interview,
+  type Submission,
+} from "./domain";
 import { live, submitExperience, track } from "./store";
 import { Stepper } from "./skill-calendar";
 import {
@@ -38,13 +45,222 @@ const sections: [keyof PostDraft, string][] = [
   ["responsibilities", "What I owned"],
   ["projects", "Projects & deliverables"],
   ["typical_day", "A typical day or week"],
-  ["tools", "Tools & methods"],
   ["challenges", "Biggest challenge"],
   ["solutions", "How I solved it"],
-  ["valuable_skills", "Most valuable skills"],
-  ["lessons_learned", "What I wish I'd known"],
   ["advice", "Advice for the next student"],
 ];
+const emptyInterview: Interview = { rounds: [], asked_back: [], outcome: "" };
+
+// Drops blank rows the author left behind before validating or publishing.
+function tidy(draft: Draft): Draft {
+  const iv = draft.interview ?? emptyInterview;
+  return {
+    ...draft,
+    interview: {
+      rounds: iv.rounds
+        .map((r) => ({
+          ...r,
+          questions: r.questions.filter((q) => q.q.trim().length >= 3),
+        }))
+        .filter((r) => r.questions.length),
+      asked_back: iv.asked_back.map((q) => q.trim()).filter(Boolean),
+      outcome: iv.outcome.trim(),
+    },
+  };
+}
+
+function TagField({
+  label,
+  hint,
+  value,
+  onChange,
+  invalid,
+}: {
+  label: string;
+  hint: string;
+  value: string;
+  onChange: (v: string) => void;
+  invalid?: string;
+}) {
+  const tags = split(value);
+  return (
+    <label className="sh-section sh-tags">
+      <span>{label}</span>
+      <small className="sh-note">{hint}</small>
+      <input
+        value={value}
+        maxLength={600}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={!!invalid}
+      />
+      {tags.length > 0 && (
+        <ul className="skill-tags" aria-label={`${label} preview`}>
+          {tags.map((t) => (
+            <li key={t}>
+              <span>{t}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {invalid && <small className="error">{invalid}</small>}
+    </label>
+  );
+}
+
+function InterviewEditor({
+  value,
+  onChange,
+}: {
+  value: Interview;
+  onChange: (v: Interview) => void;
+}) {
+  const setRound = (i: number, r: Interview["rounds"][number]) =>
+    onChange({
+      ...value,
+      rounds: value.rounds.map((x, n) => (n === i ? r : x)),
+    });
+  return (
+    <fieldset className="sh-section sh-interview">
+      <legend>The interview</legend>
+      <small className="sh-note">
+        Only questions you were really asked. Fix the wording, change the type,
+        or add any the AI missed. Empty rows are dropped.
+      </small>
+      {value.rounds.map((r, i) => (
+        <div className="sh-round" key={i}>
+          <div className="sh-round-head">
+            <input
+              value={r.label}
+              maxLength={160}
+              placeholder={`Round ${i + 1} · 30 min · Video`}
+              aria-label={`Round ${i + 1} label`}
+              onChange={(e) => setRound(i, { ...r, label: e.target.value })}
+            />
+            <button
+              type="button"
+              className="sh-icon"
+              aria-label={`Remove round ${i + 1}`}
+              onClick={() =>
+                onChange({
+                  ...value,
+                  rounds: value.rounds.filter((_, n) => n !== i),
+                })
+              }
+            >
+              <X size={16} />
+            </button>
+          </div>
+          {r.questions.map((q, n) => (
+            <div className="sh-q-row" key={n}>
+              <select
+                value={q.type}
+                aria-label={`Round ${i + 1} question ${n + 1} type`}
+                onChange={(e) =>
+                  setRound(i, {
+                    ...r,
+                    questions: r.questions.map((x, k) =>
+                      k === n
+                        ? { ...x, type: e.target.value as typeof q.type }
+                        : x,
+                    ),
+                  })
+                }
+              >
+                {interviewQuestionTypes.map((t) => (
+                  <option key={t} value={t}>
+                    {t.replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+              <textarea
+                rows={2}
+                maxLength={500}
+                value={q.q}
+                aria-label={`Round ${i + 1} question ${n + 1}`}
+                onChange={(e) =>
+                  setRound(i, {
+                    ...r,
+                    questions: r.questions.map((x, k) =>
+                      k === n ? { ...x, q: e.target.value } : x,
+                    ),
+                  })
+                }
+              />
+              <button
+                type="button"
+                className="sh-icon"
+                aria-label={`Remove round ${i + 1} question ${n + 1}`}
+                onClick={() =>
+                  setRound(i, {
+                    ...r,
+                    questions: r.questions.filter((_, k) => k !== n),
+                  })
+                }
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ))}
+          {r.questions.length < 15 && (
+            <button
+              type="button"
+              className="sh-add"
+              onClick={() =>
+                setRound(i, {
+                  ...r,
+                  questions: [
+                    ...r.questions,
+                    { q: "", type: "technical", note: "" },
+                  ],
+                })
+              }
+            >
+              <Plus size={14} /> Add a question
+            </button>
+          )}
+        </div>
+      ))}
+      {value.rounds.length < 6 && (
+        <button
+          type="button"
+          className="sh-add"
+          onClick={() =>
+            onChange({
+              ...value,
+              rounds: [
+                ...value.rounds,
+                {
+                  label: "",
+                  questions: [{ q: "", type: "technical", note: "" }],
+                },
+              ],
+            })
+          }
+        >
+          <Plus size={14} /> Add a round
+        </button>
+      )}
+      <label className="sh-sub">
+        What you asked the interviewer <small>One per line</small>
+        <textarea
+          rows={2}
+          value={value.asked_back.join("\n")}
+          onChange={(e) =>
+            onChange({ ...value, asked_back: e.target.value.split("\n") })
+          }
+        />
+      </label>
+      <label className="sh-sub">
+        Outcome or feedback <small>Optional</small>
+        <input
+          maxLength={500}
+          value={value.outcome}
+          onChange={(e) => onChange({ ...value, outcome: e.target.value })}
+        />
+      </label>
+    </fieldset>
+  );
+}
 const reduced = () =>
   typeof window !== "undefined" &&
   window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -440,7 +656,7 @@ function ReviewStep({
   back: () => void;
   publish: () => void;
 }) {
-  const issues = submissionSchema.safeParse(draft);
+  const issues = submissionSchema.safeParse(tidy(draft));
   const problems = issues.success
     ? {}
     : Object.fromEntries(
@@ -540,6 +756,24 @@ function ReviewStep({
             {problems[k] && <small className="error">{problems[k]}</small>}
           </label>
         ))}
+        <TagField
+          label="Tools & methods"
+          hint="Short tags separated by commas. Each becomes a block with a Train this skill link."
+          value={draft.tools}
+          onChange={(v) => update("tools", v)}
+          invalid={problems.tools}
+        />
+        <TagField
+          label="Skills that mattered"
+          hint="Abilities and practices, separated by commas."
+          value={draft.valuable_skills}
+          onChange={(v) => update("valuable_skills", v)}
+          invalid={problems.valuable_skills}
+        />
+        <InterviewEditor
+          value={draft.interview ?? emptyInterview}
+          onChange={(v) => update("interview", v)}
+        />
         {sample && (
           <div className="sh-file sh-file-review">
             <Paperclip size={18} aria-hidden="true" />
@@ -732,7 +966,7 @@ export function ShareAI() {
   }
   async function publish() {
     if (!draft) return;
-    const parsed = submissionSchema.safeParse(draft);
+    const parsed = submissionSchema.safeParse(tidy(draft));
     if (!parsed.success) return;
     setBusy(true);
     setFailure("");

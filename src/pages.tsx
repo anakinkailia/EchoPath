@@ -25,6 +25,7 @@ import {
   insightSchema,
   split,
   type Experience,
+  type Interview,
 } from "./domain";
 import { track } from "./store";
 import { formatBytes, loadSample, type WorkSample } from "./work-samples";
@@ -300,6 +301,100 @@ function InsightPanel({ e }: { e: Experience }) {
     </div>
   );
 }
+// Tools and skills as small blocks, each linking to the Skill Calendar.
+function SkillTags({ list }: { list: string }) {
+  const tags = split(list).filter(
+    (t) => !/^not (described|specified)$/i.test(t),
+  );
+  if (!tags.length) return <p className="muted">Not described.</p>;
+  return (
+    <ul className="skill-tags">
+      {tags.map((t) => (
+        <li key={t}>
+          <span>{t}</span>
+          <Link
+            to={`/roadmap?skill=${encodeURIComponent(t)}`}
+            aria-label={`Train ${t} in the Skill Calendar`}
+          >
+            Train this skill <ArrowRight size={13} aria-hidden="true" />
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const questionTypeLabels: Record<string, string> = {
+  intro: "Intro",
+  resume_deep_dive: "Resume deep dive",
+  behavioral: "Behavioral",
+  technical: "Technical",
+  sql: "SQL",
+  coding: "Coding",
+  case: "Case",
+  product: "Product",
+  stats: "Statistics",
+  other: "Other",
+};
+
+// The real interview log reported by the contributor (replaces "lessons learned").
+function InterviewLog({ interview }: { interview?: Interview }) {
+  const rounds = interview?.rounds.filter((r) => r.questions.length) ?? [];
+  return (
+    <section
+      className="detail-section interview-log"
+      aria-labelledby="interview-title"
+    >
+      <h2 id="interview-title">The interview</h2>
+      {rounds.length ? (
+        <>
+          {rounds.map((r, i) => (
+            <div className="interview-round" key={i}>
+              <h4>{r.label || `Round ${i + 1}`}</h4>
+              <ol>
+                {r.questions.map((q, n) => (
+                  <li key={n}>
+                    <span className="q-type">
+                      {questionTypeLabels[q.type] ?? "Other"}
+                    </span>
+                    <p>{q.q}</p>
+                    {q.note && <small>{q.note}</small>}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))}
+          {!!interview?.asked_back.length && (
+            <div className="interview-round">
+              <h4>What I asked the interviewer</h4>
+              <ul>
+                {interview.asked_back.map((q, n) => (
+                  <li key={n}>
+                    <p>{q}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {interview?.outcome && (
+            <div className="interview-round">
+              <h4>Outcome</h4>
+              <p>{interview.outcome}</p>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="interview-empty">
+          <p>No interview questions shared yet.</p>
+          <Link className="text-link" to="/share">
+            Share the questions from your interview <ArrowRight size={14} />
+          </Link>
+        </div>
+      )}
+    </section>
+  );
+}
+
 const textLike = /\.(csv|sql|txt|md|py|r|json|tsv|log|yaml|yml)$/i;
 
 // Shows a work sample attached to a submission saved in this browser.
@@ -438,8 +533,11 @@ export function Detail() {
             [
               "Tools & skills",
               [
-                ["Tools and technologies", e.tools],
-                ["Skills that mattered", e.valuable_skills],
+                ["Tools and technologies", <SkillTags list={e.tools} />],
+                [
+                  "Skills that mattered",
+                  <SkillTags list={e.valuable_skills} />,
+                ],
               ],
             ],
             [
@@ -449,19 +547,27 @@ export function Detail() {
                 ["The approach", e.solutions],
               ],
             ],
-            ["Lessons learned", [["What I wish I knew", e.lessons_learned]]],
-            ["Advice for future students", [["Start here", e.advice]]],
           ].map(([title, sections]) => (
             <section className="detail-section" key={String(title)}>
               <h2>{String(title)}</h2>
-              {(sections as string[][]).map(([label, value]) => (
-                <div key={label}>
-                  <h4>{label}</h4>
-                  <p>{value}</p>
-                </div>
-              ))}
+              {(sections as [string, React.ReactNode][]).map(
+                ([label, value]) => (
+                  <div key={label}>
+                    <h4>{label}</h4>
+                    {typeof value === "string" ? <p>{value}</p> : value}
+                  </div>
+                ),
+              )}
             </section>
           ))}
+          <InterviewLog interview={e.interview} />
+          <section className="detail-section">
+            <h2>Advice for future students</h2>
+            <div>
+              <h4>Start here</h4>
+              <p>{e.advice}</p>
+            </div>
+          </section>
           {e.provenance === "local" && <LocalWorkSample id={e.id} />}
           {playbook && (
             <section
