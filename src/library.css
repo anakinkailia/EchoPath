@@ -359,24 +359,6 @@
   line-height: 1.3;
   color: var(--card-ink);
 }
-.skill-tags a {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--tag-accent);
-  white-space: nowrap;
-}
-.skill-tags a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.skill-tags a:focus-visible {
-  outline: 2px solid var(--tag-accent);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
 
 /* Experience page: the contributor's real interview log. */
 .interview-round + .interview-round {
@@ -426,4 +408,38 @@
 }
 .interview-empty p {
   margin: 0 0 8px;
+}
+
+/* Tags are pickable; one button at the bottom trains the picked skill. */
+.skill-tags button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--card-ink);
+  cursor: pointer;
+}
+.skill-tags li:has(button) {
+  padding: 0;
+}
+.skill-tags li button {
+  padding: 8px 14px;
+  border-radius: 14px;
+}
+.skill-tags li:has(button[aria-pressed="true"]) {
+  border-color: var(--tag-accent);
+  background: var(--tag-accent-bg);
+}
+.skill-tags button:focus-visible {
+  outline: 2px solid var(--tag-accent);
+  outline-offset: 2px;
+}
+.train-skill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 20px;
+}
+.train-skill small {
+  color: var(--card-ink-3);
 }

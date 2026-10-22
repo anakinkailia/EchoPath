@@ -301,26 +301,53 @@ function InsightPanel({ e }: { e: Experience }) {
     </div>
   );
 }
-// Tools and skills as small blocks, each linking to the Skill Calendar.
-function SkillTags({ list }: { list: string }) {
-  const tags = split(list).filter(
-    (t) => !/^not (described|specified)$/i.test(t),
-  );
-  if (!tags.length) return <p className="muted">Not described.</p>;
+const tagsOf = (list: string) =>
+  split(list).filter((t) => !/^not (described|specified)$/i.test(t));
+
+// Tools and skills as small blocks; pick one, then train it with the single
+// button at the bottom of the section.
+function ToolsAndSkills({ e }: { e: Experience }) {
+  const groups: [string, string[]][] = [
+    ["Tools and technologies", tagsOf(e.tools)],
+    ["Skills that mattered", tagsOf(e.valuable_skills)],
+  ];
+  const all = groups.flatMap(([, tags]) => tags);
+  const [picked, setPicked] = useState("");
+  const skill = all.includes(picked) ? picked : (all[0] ?? "");
   return (
-    <ul className="skill-tags">
-      {tags.map((t) => (
-        <li key={t}>
-          <span>{t}</span>
-          <Link
-            to={`/roadmap?skill=${encodeURIComponent(t)}`}
-            aria-label={`Train ${t} in the Skill Calendar`}
-          >
-            Train this skill <ArrowRight size={13} aria-hidden="true" />
-          </Link>
-        </li>
+    <section className="detail-section">
+      <h2>Tools & skills</h2>
+      {groups.map(([label, tags]) => (
+        <div key={label}>
+          <h4>{label}</h4>
+          {tags.length ? (
+            <ul className="skill-tags">
+              {tags.map((t) => (
+                <li key={t}>
+                  <button
+                    type="button"
+                    aria-pressed={t === skill}
+                    onClick={() => setPicked(t)}
+                  >
+                    {t}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">Not described.</p>
+          )}
+        </div>
       ))}
-    </ul>
+      {skill && (
+        <div className="train-skill">
+          <ButtonLink to={`/roadmap?skill=${encodeURIComponent(skill)}`}>
+            Train this skill: {skill}
+          </ButtonLink>
+          <small>Pick any tag above to choose a different skill.</small>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -530,16 +557,7 @@ export function Detail() {
                 ["A typical day or week · daily SOP", e.typical_day],
               ],
             ],
-            [
-              "Tools & skills",
-              [
-                ["Tools and technologies", <SkillTags list={e.tools} />],
-                [
-                  "Skills that mattered",
-                  <SkillTags list={e.valuable_skills} />,
-                ],
-              ],
-            ],
+            ["Tools & skills", "tools"],
             [
               "Challenges & how I worked through them",
               [
@@ -547,19 +565,23 @@ export function Detail() {
                 ["The approach", e.solutions],
               ],
             ],
-          ].map(([title, sections]) => (
-            <section className="detail-section" key={String(title)}>
-              <h2>{String(title)}</h2>
-              {(sections as [string, React.ReactNode][]).map(
-                ([label, value]) => (
-                  <div key={label}>
-                    <h4>{label}</h4>
-                    {typeof value === "string" ? <p>{value}</p> : value}
-                  </div>
-                ),
-              )}
-            </section>
-          ))}
+          ].map(([title, sections]) =>
+            sections === "tools" ? (
+              <ToolsAndSkills key="tools" e={e} />
+            ) : (
+              <section className="detail-section" key={String(title)}>
+                <h2>{String(title)}</h2>
+                {(sections as [string, React.ReactNode][]).map(
+                  ([label, value]) => (
+                    <div key={label}>
+                      <h4>{label}</h4>
+                      {typeof value === "string" ? <p>{value}</p> : value}
+                    </div>
+                  ),
+                )}
+              </section>
+            ),
+          )}
           <InterviewLog interview={e.interview} />
           <section className="detail-section">
             <h2>Advice for future students</h2>
