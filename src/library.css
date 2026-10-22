@@ -1,0 +1,489 @@
+/* Experience library layout + experience cards (shared by landing and detail pages). */
+:root {
+  --card-bg: oklch(11% 0.025 295 / 0.9);
+  --card-bg-hover: oklch(13% 0.04 295 / 0.95);
+  --card-rim: oklch(100% 0 0 / 0.07);
+  --card-rim-hover: oklch(72% 0.14 295 / 0.55);
+  --card-glow: oklch(55% 0.24 295 / 0.22);
+  --card-ink: oklch(95% 0.01 300);
+  --card-ink-2: oklch(80% 0.025 300);
+  --card-ink-3: oklch(66% 0.03 300);
+  --card-chip: oklch(100% 0 0 / 0.05);
+  --tag-accent: #c4b5fd;
+  --tag-accent-bg: #a78bfa1a;
+}
+
+/* Wider page with slimmer side margins. */
+.library-page {
+  max-width: 1520px;
+  padding-inline: 28px;
+}
+.library-page .page-heading {
+  text-align: center;
+}
+.library-page .page-heading .eyebrow {
+  justify-content: center;
+}
+.library-page .page-heading p {
+  margin-inline: auto;
+}
+.library-layout {
+  grid-template-columns: 272px minmax(0, 1fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+/* The rail spans the results column; the panel inside stays vertically
+   centred in the viewport and travels with the page. */
+.filter-rail {
+  position: relative;
+  min-width: 0;
+}
+.filter-rail {
+  --panel-h: 560px;
+}
+.filter-rail > .filter-panel {
+  position: sticky;
+  top: calc(
+    var(--nav-height) +
+      max(16px, (100vh - var(--nav-height) - var(--panel-h, 560px)) / 2)
+  );
+  max-height: calc(100vh - var(--nav-height) - 32px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.filter-panel {
+  border-radius: 20px;
+  padding: 22px;
+  background:
+    linear-gradient(180deg, oklch(100% 0 0 / 0.05), oklch(100% 0 0 / 0.015)),
+    var(--card-bg);
+  border: 1px solid var(--card-rim);
+  box-shadow:
+    inset 0 1px 0 oklch(100% 0 0 / 0.08),
+    0 24px 60px -30px oklch(0% 0 0 / 0.8);
+}
+.filter-panel strong {
+  font-size: 14px;
+  color: var(--card-ink);
+}
+.filter-panel label {
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--card-ink-2);
+  margin-top: 16px;
+}
+.filter-panel select {
+  font-size: 13px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border-color: var(--card-rim);
+  background-color: oklch(100% 0 0 / 0.04);
+  color: var(--card-ink);
+}
+.filter-panel select:hover {
+  border-color: oklch(100% 0 0 / 0.16);
+}
+.filter-help {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top-color: var(--card-rim);
+}
+.filter-help h4 {
+  font-size: 14px;
+  color: var(--card-ink);
+}
+.filter-help p {
+  font-size: 12.5px;
+  color: var(--card-ink-3);
+}
+.filter-help a {
+  font-size: 13px;
+  font-weight: 600;
+  color: oklch(78% 0.12 295);
+}
+
+.search-box {
+  border-radius: 16px;
+  border-color: var(--card-rim);
+  background: var(--card-bg);
+}
+.search-box input {
+  font-size: 15px;
+  padding: 16px 0;
+}
+.search-box kbd {
+  font-family: var(--font-label);
+  font-size: 10px;
+}
+.results-toolbar {
+  font-size: 13px;
+}
+.results-toolbar label {
+  font-size: 12.5px;
+}
+.results-toolbar select {
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+/* Three cards per row on the library. */
+.library-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Experience card */
+.experience-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid var(--card-rim);
+  background: var(--card-bg);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.05);
+  overflow: hidden;
+  min-width: 0;
+  transition:
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Soft light from the top-left corner that wakes up on hover. */
+.experience-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    120% 70% at 0% 0%,
+    var(--card-glow),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.experience-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--card-rim-hover);
+  background-color: var(--card-bg-hover);
+  box-shadow:
+    inset 0 1px 0 oklch(100% 0 0 / 0.08),
+    0 22px 50px -24px oklch(55% 0.24 295 / 0.55);
+}
+.experience-card:hover::before {
+  opacity: 1;
+}
+.experience-card:active {
+  transform: translateY(-1px) scale(0.995);
+}
+.experience-card:focus-visible {
+  outline: 2px solid oklch(80% 0.12 295);
+  outline-offset: 3px;
+}
+.xc-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.xc-org {
+  display: grid;
+  min-width: 0;
+  line-height: 1.3;
+}
+.xc-org strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--card-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xc-org small {
+  font-size: 12px;
+  color: var(--card-ink-3);
+}
+.xc-arrow {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  border-radius: 999px;
+  color: var(--card-ink-2);
+  background: var(--card-chip);
+  transition:
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.experience-card:hover .xc-arrow {
+  transform: translate(2px, -2px);
+  color: oklch(15% 0.04 295);
+  background: oklch(85% 0.09 295);
+}
+.experience-card h3 {
+  font-size: 18px;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+  font-weight: 650;
+  margin: 0 0 8px;
+  color: var(--card-ink);
+}
+.experience-card > p {
+  flex: 1;
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--card-ink-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.experience-card .tags {
+  margin-bottom: 16px;
+  gap: 6px;
+}
+.experience-card .tags span {
+  font-size: 11.5px;
+  font-weight: 550;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--card-rim);
+  background: var(--card-chip);
+  color: var(--card-ink-2);
+}
+.xc-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--card-rim);
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--card-ink-3);
+}
+.xc-meta span:last-child {
+  margin-left: auto;
+}
+.xc-meta .badge {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 0;
+  color: oklch(88% 0.07 295);
+  background: oklch(55% 0.2 295 / 0.18);
+}
+
+@media (max-width: 1280px) {
+  .library-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 960px) {
+  .library-page {
+    padding-inline: 20px;
+  }
+  .library-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .filter-rail > .filter-panel {
+    position: static;
+    max-height: none;
+  }
+}
+@media (max-width: 640px) {
+  .library-page {
+    padding-inline: 16px;
+  }
+  .library-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .experience-card {
+    padding: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .experience-card,
+  .experience-card::before,
+  .xc-arrow {
+    transition: none;
+  }
+  .experience-card:hover,
+  .experience-card:hover .xc-arrow {
+    transform: none;
+  }
+}
+
+/* Experience page: tools and skills as blocks that link to the Skill Calendar. */
+.skill-tags {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.skill-tags li {
+  margin: 0;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px 9px;
+  border-radius: 14px;
+  border: 1px solid var(--card-rim);
+  background: var(--card-chip);
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.skill-tags li:hover,
+.skill-tags li:focus-within {
+  border-color: var(--card-rim-hover);
+  background: var(--tag-accent-bg);
+}
+.skill-tags span {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--card-ink);
+}
+
+/* Contributor interview logs and attributed preparation for sample positions. */
+.interview-context {
+  margin-bottom: 20px;
+}
+.interview-context h3 {
+  margin: 6px 0 8px;
+  color: var(--card-ink);
+}
+.interview-context p {
+  margin: 0;
+}
+.interview-source {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid var(--card-rim);
+  border-radius: 14px;
+  background: var(--card-chip);
+}
+.interview-source-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+.interview-source-heading h3 {
+  margin: 0 0 4px;
+  color: var(--card-ink);
+}
+.interview-source-heading p {
+  margin: 0;
+}
+.interview-source small,
+.interview-footnote {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--card-ink-3);
+}
+.interview-source .interview-relevance {
+  color: var(--card-ink);
+}
+.interview-footnote {
+  margin: 20px 0 0;
+}
+.interview-round + .interview-round {
+  margin-top: 18px;
+}
+.interview-round ol,
+.interview-round ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 8px;
+}
+.interview-round li {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--card-rim);
+  background: var(--card-chip);
+}
+.interview-round li p {
+  margin: 0;
+  color: var(--card-ink);
+}
+.interview-round li small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--card-ink-3);
+}
+.q-type {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tag-accent);
+  background: var(--tag-accent-bg);
+}
+.interview-empty {
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px dashed var(--card-rim-hover);
+}
+.interview-empty p {
+  margin: 0 0 8px;
+}
+
+/* Tags are pickable; one button at the bottom trains the picked skill. */
+.skill-tags button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--card-ink);
+  cursor: pointer;
+}
+.skill-tags li:has(button) {
+  padding: 0;
+}
+.skill-tags li button {
+  padding: 8px 14px;
+  border-radius: 14px;
+}
+.skill-tags li:has(button[aria-pressed="true"]) {
+  border-color: var(--tag-accent);
+  background: var(--tag-accent-bg);
+}
+.skill-tags button:focus-visible {
+  outline: 2px solid var(--tag-accent);
+  outline-offset: 2px;
+}
+.train-skill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 20px;
+}
+.train-skill small {
+  color: var(--card-ink-3);
+}
