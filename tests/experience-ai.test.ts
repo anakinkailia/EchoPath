@@ -68,6 +68,19 @@ describe("analyze replies", () => {
     expect(e.questions).toHaveLength(5);
     expect(e.questions.at(-1)).toEqual(interviewFollowUp);
   });
+  it("keeps a role whose company isn't named", () => {
+    const [e] = parseAnalyzeReply({
+      experiences: [
+        {
+          role_title: "Data Engineering Intern",
+          company: "",
+          summary: "Built warehouse tables.",
+          questions: [{ question: "What did a typical week look like?" }],
+        },
+      ],
+    });
+    expect(e.company).toBe("Not listed");
+  });
   it("rejects replies with no usable experience", () => {
     expect(() => parseAnalyzeReply({ experiences: [{}] })).toThrow();
     expect(() => parseAnalyzeReply({})).toThrow();

@@ -157,7 +157,8 @@ export function parseAnalyzeReply(raw: unknown): FoundExperience[] {
     return foundExperienceSchema.safeParse({
       key: clip(e.key, 40) || `exp-${i + 1}`,
       role_title: clip(e.role_title, 120),
-      company: clip(e.company, 120),
+      // Keep roles even when the source names no company; the author can fix it on review.
+      company: clip(e.company, 120) || "Not listed",
       industry: clip(e.industry, 100) || "Other",
       experience_type: (experienceTypes as readonly string[]).includes(
         String(e.experience_type),
